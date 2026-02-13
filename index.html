@@ -209,14 +209,44 @@ async function cargarInicial() {
 function crearGrafico(id, labels, datasets) {
   return new Chart(document.getElementById(id), {
     type: 'line',
-    data: { labels, datasets },
+    data: { 
+      labels, 
+      datasets: datasets.map(ds => ({
+        ...ds,
+        tension: 0.35,
+        borderWidth: 2,
+        pointRadius: 2,
+        fill: false
+      }))
+    },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: false
+      animation: {
+        duration: 500,
+        easing: 'easeOutCubic'
+      },
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          position: 'top'
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            maxRotation: 45,
+            minRotation: 45
+          }
+        }
+      }
     }
   });
 }
+
 
 async function verificarNuevoDato() {
 
@@ -268,4 +298,5 @@ setInterval(verificarNuevoDato, 3000);
 
 </body>
 </html>
+
 
