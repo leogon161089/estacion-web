@@ -12,7 +12,9 @@
 <table border="1" id="tabla">
   <tr>
     <th>Fecha</th>
-    <th>Valor</th>
+    <th>Temperatura</th>
+    <th>Humedad</th>
+    <th>Presión</th>
   </tr>
 </table>
 
@@ -21,52 +23,77 @@
 <canvas id="grafico"></canvas>
 
 <script>
-const URL = "PEGÁ_ACÁ_TU_URL_DE_APPS_SCRIPT";
 
-function cargarDatos() {
-  fetch(URL)
-    .then(response => response.json())
-    .then(data => {
+const URL = "https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
 
-      // Limpiar tabla
-      const tabla = document.getElementById("tabla");
-      tabla.innerHTML = `
-        <tr>
-          <th>Fecha</th>
-          <th>Valor</th>
-        </tr>
-      `;
+async function cargarDatos() {
 
-      const labels = [];
-      const valores = [];
+  const response = await fetch(URL);
+  const data = await response.json();
 
-      data.forEach(d => {
-        labels.push(d.timestamp);
-        valores.push(d.valor);
+  console.log("Datos recibidos:", data);
 
-        tabla.innerHTML += `
-          <tr>
-            <td>${d.timestamp}</td>
-            <td>${d.valor}</td>
-          </tr>
-        `;
-      });
+  const tabla = document.getElementById("tabla");
 
-      new Chart(document.getElementById("grafico"), {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Valor medido',
-            data: valores
-          }]
+  // Reset tabla
+  tabla.innerHTML = `
+    <tr>
+      <th>Fecha</th>
+      <th>Temperatura</th>
+      <th>Humedad</th>
+      <th>Presión</th>
+    </tr>
+  `;
+
+  const labels = [];
+  const temp = [];
+  const hum = [];
+  const pres = [];
+
+  data.forEach(d => {
+
+    const fecha = new Date(d.timestamp).toLocaleString();
+
+    labels.push(fecha);
+    temp.push(d.v1);
+    hum.push(d.v2);
+    pres.push(d.v3);
+
+    tabla.innerHTML += `
+      <tr>
+        <td>${fecha}</td>
+        <td>${d.v1}</td>
+        <td>${d.v2}</td>
+        <td>${d.v3}</td>
+      </tr>
+    `;
+  });
+
+  new Chart(document.getElementById("grafico"), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Temperatura',
+          data: temp
+        },
+        {
+          label: 'Humedad',
+          data: hum
+        },
+        {
+          label: 'Presión',
+          data: pres
         }
-      });
+      ]
+    }
+  });
 
-    });
 }
 
 cargarDatos();
+
 </script>
 
 </body>
