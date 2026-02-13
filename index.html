@@ -38,11 +38,33 @@ async function cargarInicial() {
   const hum = [];
   const pres = [];
 
+  const tabla = document.getElementById("tabla");
+  tabla.innerHTML = `
+    <tr>
+      <th>Fecha</th>
+      <th>Temperatura</th>
+      <th>Humedad</th>
+      <th>Presión</th>
+    </tr>
+  `;
+
   data.forEach(d => {
-    labels.push(new Date(d.timestamp).toLocaleString());
+
+    const fechaFormateada = new Date(d.timestamp).toLocaleString();
+
+    labels.push(fechaFormateada);
     temp.push(d.v1);
     hum.push(d.v2);
     pres.push(d.v3);
+
+    tabla.innerHTML += `
+      <tr>
+        <td>${fechaFormateada}</td>
+        <td>${d.v1}</td>
+        <td>${d.v2}</td>
+        <td>${d.v3}</td>
+      </tr>
+    `;
   });
 
   ultimoTimestamp = data[data.length - 1].timestamp;
@@ -69,15 +91,25 @@ async function verificarNuevoDato() {
 
     ultimoTimestamp = nuevo.timestamp;
 
-    miGrafico.data.labels.push(
-      new Date(nuevo.timestamp).toLocaleString()
-    );
+    const fechaFormateada = new Date(nuevo.timestamp).toLocaleString();
 
+    // Agregar al gráfico
+    miGrafico.data.labels.push(fechaFormateada);
     miGrafico.data.datasets[0].data.push(nuevo.v1);
     miGrafico.data.datasets[1].data.push(nuevo.v2);
     miGrafico.data.datasets[2].data.push(nuevo.v3);
-
     miGrafico.update();
+
+    // Agregar SOLO una fila nueva a la tabla
+    const tabla = document.getElementById("tabla");
+    tabla.innerHTML += `
+      <tr>
+        <td>${fechaFormateada}</td>
+        <td>${nuevo.v1}</td>
+        <td>${nuevo.v2}</td>
+        <td>${nuevo.v3}</td>
+      </tr>
+    `;
   }
 }
 
@@ -88,5 +120,6 @@ setInterval(verificarNuevoDato, 30000);
 
 </body>
 </html>
+
 
 
