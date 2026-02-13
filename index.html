@@ -1,29 +1,144 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Estación Ambiental</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Monitoreo Ambiental</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        background-color: #f2f4f8;
+        color: #2c3e50;
+    }
+
+    header {
+        background-color: #1b3a57;
+        color: white;
+        padding: 25px;
+        text-align: center;
+    }
+
+    header h1 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 24px;
+        letter-spacing: 1px;
+    }
+
+    header p {
+        margin-top: 8px;
+        font-size: 14px;
+        opacity: 0.85;
+    }
+
+    .contenedor {
+        max-width: 1100px;
+        margin: 40px auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        padding: 25px;
+    }
+
+    .card h2 {
+        margin-top: 0;
+        font-size: 18px;
+        border-bottom: 2px solid #e6ecf2;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        color: #1b3a57;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    th {
+        background-color: #1b3a57;
+        color: white;
+        padding: 10px;
+        text-align: center;
+    }
+
+    td {
+        padding: 10px;
+        text-align: center;
+        border-bottom: 1px solid #e6ecf2;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9fbfd;
+    }
+
+    .estado {
+        text-align: right;
+        font-size: 13px;
+        margin-top: 10px;
+        color: #27ae60;
+    }
+
+    canvas {
+        max-height: 400px;
+    }
+
+    footer {
+        text-align: center;
+        padding: 20px;
+        font-size: 13px;
+        color: #7f8c8d;
+    }
+
+</style>
 </head>
+
 <body>
 
-<h1>Datos de la estación</h1>
+<header>
+    <h1>Sistema de Monitoreo Ambiental en Tiempo Real</h1>
+    <p>Estación automática de registro climático</p>
+</header>
 
-<table border="1" id="tabla">
-  <tr>
-    <th>Fecha</th>
-    <th>Temperatura</th>
-    <th>Humedad</th>
-    <th>Presión</th>
-  </tr>
-</table>
+<div class="contenedor">
 
-<br>
+    <div class="card">
+        <h2>Registro Histórico Reciente</h2>
+        <table id="tabla">
+            <tr>
+                <th>Fecha y Hora</th>
+                <th>Temperatura (°C)</th>
+                <th>Humedad (%)</th>
+                <th>Presión (hPa)</th>
+            </tr>
+        </table>
+        <div class="estado" id="estado">● Sistema activo</div>
+    </div>
 
-<canvas id="grafico"></canvas>
+    <div class="card">
+        <h2>Tendencia de Variables Ambientales</h2>
+        <canvas id="grafico"></canvas>
+    </div>
+
+</div>
+
+<footer>
+    Proyecto de Monitoreo Ambiental — Prototipo de Implementación Institucional
+</footer>
 
 <script>
-  const URL = "https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
+const URL = "https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
 
 let miGrafico;
 let ultimoTimestamp = null;
@@ -41,10 +156,10 @@ async function cargarInicial() {
   const tabla = document.getElementById("tabla");
   tabla.innerHTML = `
     <tr>
-      <th>Fecha</th>
-      <th>Temperatura</th>
-      <th>Humedad</th>
-      <th>Presión</th>
+      <th>Fecha y Hora</th>
+      <th>Temperatura (°C)</th>
+      <th>Humedad (%)</th>
+      <th>Presión (hPa)</th>
     </tr>
   `;
 
@@ -74,10 +189,14 @@ async function cargarInicial() {
     data: {
       labels: labels,
       datasets: [
-        { label: 'Temperatura', data: temp },
-        { label: 'Humedad', data: hum },
-        { label: 'Presión', data: pres }
+        { label: 'Temperatura (°C)', data: temp, tension: 0.3 },
+        { label: 'Humedad (%)', data: hum, tension: 0.3 },
+        { label: 'Presión (hPa)', data: pres, tension: 0.3 }
       ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false
     }
   });
 }
@@ -93,14 +212,12 @@ async function verificarNuevoDato() {
 
     const fechaFormateada = new Date(nuevo.timestamp).toLocaleString();
 
-    // Agregar al gráfico
     miGrafico.data.labels.push(fechaFormateada);
     miGrafico.data.datasets[0].data.push(nuevo.v1);
     miGrafico.data.datasets[1].data.push(nuevo.v2);
     miGrafico.data.datasets[2].data.push(nuevo.v3);
     miGrafico.update();
 
-    // Agregar SOLO una fila nueva a la tabla
     const tabla = document.getElementById("tabla");
     tabla.innerHTML += `
       <tr>
@@ -114,12 +231,13 @@ async function verificarNuevoDato() {
 }
 
 cargarInicial();
-setInterval(verificarNuevoDato, 1000);
-
+setInterval(verificarNuevoDato, 3000);
 </script>
 
 </body>
 </html>
+
+
 
 
 
