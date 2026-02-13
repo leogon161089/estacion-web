@@ -26,17 +26,10 @@
         margin: 0;
         font-weight: 600;
         font-size: 24px;
-        letter-spacing: 1px;
-    }
-
-    header p {
-        margin-top: 8px;
-        font-size: 14px;
-        opacity: 0.85;
     }
 
     .contenedor {
-        max-width: 1100px;
+        max-width: 1200px;
         margin: 40px auto;
         padding: 20px;
         display: flex;
@@ -83,15 +76,14 @@
         background-color: #f9fbfd;
     }
 
-    .estado {
-        text-align: right;
-        font-size: 13px;
-        margin-top: 10px;
-        color: #27ae60;
+    .grid-graficos {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
     }
 
     canvas {
-        max-height: 400px;
+        max-height: 300px;
     }
 
     footer {
@@ -108,11 +100,11 @@
 
 <header>
     <h1>Sistema de Monitoreo Ambiental en Tiempo Real</h1>
-    <p>Estación automática de registro climático</p>
 </header>
 
 <div class="contenedor">
 
+    <!-- TABLA -->
     <div class="card">
         <h2>Registro Histórico Reciente</h2>
         <table id="tabla">
@@ -123,24 +115,44 @@
                 <th>Presión (hPa)</th>
             </tr>
         </table>
-        <div class="estado" id="estado">● Sistema activo</div>
     </div>
 
+    <!-- GRÁFICO GENERAL -->
     <div class="card">
-        <h2>Tendencia de Variables Ambientales</h2>
-        <canvas id="grafico"></canvas>
+        <h2>Visualización General de Variables</h2>
+        <canvas id="graficoGeneral"></canvas>
+    </div>
+
+    <!-- 3 GRÁFICOS EN UNA FILA -->
+    <div class="grid-graficos">
+
+        <div class="card">
+            <h2>Temperatura</h2>
+            <canvas id="graficoTemp"></canvas>
+        </div>
+
+        <div class="card">
+            <h2>Humedad</h2>
+            <canvas id="graficoHum"></canvas>
+        </div>
+
+        <div class="card">
+            <h2>Presión</h2>
+            <canvas id="graficoPres"></canvas>
+        </div>
+
     </div>
 
 </div>
 
 <footer>
-    Proyecto de Monitoreo Ambiental — Prototipo de Implementación Institucional
+Proyecto de Monitoreo Ambiental — Prototipo Institucional
 </footer>
 
 <script>
-const URL = "https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
+const URL = "TU_URL_AQUI";
 
-let miGrafico;
+let graficoGeneral, graficoTemp, graficoHum, graficoPres;
 let ultimoTimestamp = null;
 
 async function cargarInicial() {
@@ -165,16 +177,16 @@ async function cargarInicial() {
 
   data.forEach(d => {
 
-    const fechaFormateada = new Date(d.timestamp).toLocaleString();
+    const fecha = new Date(d.timestamp).toLocaleString();
 
-    labels.push(fechaFormateada);
+    labels.push(fecha);
     temp.push(d.v1);
     hum.push(d.v2);
     pres.push(d.v3);
 
     tabla.innerHTML += `
       <tr>
-        <td>${fechaFormateada}</td>
+        <td>${fecha}</td>
         <td>${d.v1}</td>
         <td>${d.v2}</td>
         <td>${d.v3}</td>
@@ -184,63 +196,39 @@ async function cargarInicial() {
 
   ultimoTimestamp = data[data.length - 1].timestamp;
 
-  miGrafico = new Chart(document.getElementById("grafico"), {
+  // GRÁFICO GENERAL
+  graficoGeneral = new Chart(document.getElementById("graficoGeneral"), {
     type: 'line',
     data: {
-      labels: labels,
+      labels,
       datasets: [
         { label: 'Temperatura (°C)', data: temp, tension: 0.3 },
         { label: 'Humedad (%)', data: hum, tension: 0.3 },
         { label: 'Presión (hPa)', data: pres, tension: 0.3 }
       ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false
+    }
+  });
+
+  // INDIVIDUALES
+  graficoTemp = crearGraficoIndividual("graficoTemp", "Temperatura (°C)", labels, temp);
+  graficoHum  = crearGraficoIndividual("graficoHum", "Humedad (%)", labels, hum);
+  graficoPres = crearGraficoIndividual("graficoPres", "Presión (hPa)", labels, pres);
+}
+
+function crearGraficoIndividual(id, label, labels, datos) {
+  return new Chart(document.getElementById(id), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label, data: datos, tension: 0.3 }
+      ]
     }
   });
 }
 
-async function verificarNuevoDato() {
-
-  const res = await fetch(URL + "?last=true");
-  const nuevo = await res.json();
-
-  if (nuevo.timestamp !== ultimoTimestamp) {
-
-    ultimoTimestamp = nuevo.timestamp;
-
-    const fechaFormateada = new Date(nuevo.timestamp).toLocaleString();
-
-    miGrafico.data.labels.push(fechaFormateada);
-    miGrafico.data.datasets[0].data.push(nuevo.v1);
-    miGrafico.data.datasets[1].data.push(nuevo.v2);
-    miGrafico.data.datasets[2].data.push(nuevo.v3);
-    miGrafico.update();
-
-    const tabla = document.getElementById("tabla");
-    tabla.innerHTML += `
-      <tr>
-        <td>${fechaFormateada}</td>
-        <td>${nuevo.v1}</td>
-        <td>${nuevo.v2}</td>
-        <td>${nuevo.v3}</td>
-      </tr>
-    `;
-  }
-}
-
 cargarInicial();
-setInterval(verificarNuevoDato, 2000);
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
