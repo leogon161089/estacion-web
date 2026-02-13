@@ -23,27 +23,13 @@
 <canvas id="grafico"></canvas>
 
 <script>
+  let miGrafico;
+let ultimoTimestamp = null;
 
-const URL = "https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
+async function cargarInicial() {
 
-async function cargarDatos() {
-
-  const response = await fetch(URL);
-  const data = await response.json();
-
-  console.log("Datos recibidos:", data);
-
-  const tabla = document.getElementById("tabla");
-
-  // Reset tabla
-  tabla.innerHTML = `
-    <tr>
-      <th>Fecha</th>
-      <th>Temperatura</th>
-      <th>Humedad</th>
-      <th>Presión</th>
-    </tr>
-  `;
+  const res = await fetch(URL);
+  const data = await res.json();
 
   const labels = [];
   const temp = [];
@@ -51,50 +37,53 @@ async function cargarDatos() {
   const pres = [];
 
   data.forEach(d => {
-
-    const fecha = new Date(d.timestamp).toLocaleString();
-
-    labels.push(fecha);
+    labels.push(new Date(d.timestamp).toLocaleString());
     temp.push(d.v1);
     hum.push(d.v2);
     pres.push(d.v3);
-
-    tabla.innerHTML += `
-      <tr>
-        <td>${fecha}</td>
-        <td>${d.v1}</td>
-        <td>${d.v2}</td>
-        <td>${d.v3}</td>
-      </tr>
-    `;
   });
 
-  new Chart(document.getElementById("grafico"), {
+  ultimoTimestamp = data[data.length - 1].timestamp;
+
+  miGrafico = new Chart(document.getElementById("grafico"), {
     type: 'line',
     data: {
       labels: labels,
       datasets: [
-        {
-          label: 'Temperatura',
-          data: temp
-        },
-        {
-          label: 'Humedad',
-          data: hum
-        },
-        {
-          label: 'Presión',
-          data: pres
-        }
+        { label: 'Temperatura', data: temp },
+        { label: 'Humedad', data: hum },
+        { label: 'Presión', data: pres }
       ]
     }
   });
-
 }
 
-cargarDatos();
+async function verificarNuevoDato() {
+
+  const res = await fetch(URL + "?last=true");
+  const nuevo = await res.json();
+
+  if (nuevo.timestamp !== ultimoTimestamp) {
+
+    ultimoTimestamp = nuevo.timestamp;
+
+    miGrafico.data.labels.push(
+      new Date(nuevo.timestamp).toLocaleString()
+    );
+
+    miGrafico.data.datasets[0].data.push(nuevo.v1);
+    miGrafico.data.datasets[1].data.push(nuevo.v2);
+    miGrafico.data.datasets[2].data.push(nuevo.v3);
+
+    miGrafico.update();
+  }
+}
+
+cargarInicial();
+setInterval(verificarNuevoDato, 30000);
 
 </script>
 
 </body>
 </html>
+
