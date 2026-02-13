@@ -8,91 +8,89 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-    body {
-        margin: 0;
-        font-family: "Segoe UI", Roboto, Arial, sans-serif;
-        background-color: #f2f4f8;
-        color: #2c3e50;
-    }
+body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background-color: #f2f4f8;
+    color: #2c3e50;
+}
 
-    header {
-        background-color: #1b3a57;
-        color: white;
-        padding: 25px;
-        text-align: center;
-    }
+header {
+    background-color: #1b3a57;
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
 
-    header h1 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 24px;
-    }
+header h1 {
+    margin: 0;
+    font-size: 24px;
+}
 
-    .contenedor {
-        max-width: 1200px;
-        margin: 40px auto;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 40px;
-    }
+.contenedor {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
 
-    .card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-        padding: 25px;
-    }
+.card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    padding: 25px;
+}
 
-    .card h2 {
-        margin-top: 0;
-        font-size: 18px;
-        border-bottom: 2px solid #e6ecf2;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
-        color: #1b3a57;
-    }
+.card h2 {
+    margin-top: 0;
+    font-size: 18px;
+    border-bottom: 2px solid #e6ecf2;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    color: #1b3a57;
+}
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-    }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
 
-    th {
-        background-color: #1b3a57;
-        color: white;
-        padding: 10px;
-        text-align: center;
-    }
+th {
+    background-color: #1b3a57;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
 
-    td {
-        padding: 10px;
-        text-align: center;
-        border-bottom: 1px solid #e6ecf2;
-    }
+td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #e6ecf2;
+}
 
-    tr:nth-child(even) {
-        background-color: #f9fbfd;
-    }
+tr:nth-child(even) {
+    background-color: #f9fbfd;
+}
 
-    .grid-graficos {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
+.grid-graficos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
 
-    canvas {
-        max-height: 300px;
-    }
+canvas {
+    max-height: 300px;
+}
 
-    footer {
-        text-align: center;
-        padding: 20px;
-        font-size: 13px;
-        color: #7f8c8d;
-    }
-
+footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 13px;
+    color: #7f8c8d;
+}
 </style>
 </head>
 
@@ -104,7 +102,6 @@
 
 <div class="contenedor">
 
-    <!-- TABLA -->
     <div class="card">
         <h2>Registro Histórico Reciente</h2>
         <table id="tabla">
@@ -117,30 +114,24 @@
         </table>
     </div>
 
-    <!-- GRÁFICO GENERAL -->
     <div class="card">
-        <h2>Visualización General de Variables</h2>
+        <h2>Visualización General</h2>
         <canvas id="graficoGeneral"></canvas>
     </div>
 
-    <!-- 3 GRÁFICOS EN UNA FILA -->
     <div class="grid-graficos">
-
         <div class="card">
             <h2>Temperatura</h2>
             <canvas id="graficoTemp"></canvas>
         </div>
-
         <div class="card">
             <h2>Humedad</h2>
             <canvas id="graficoHum"></canvas>
         </div>
-
         <div class="card">
             <h2>Presión</h2>
             <canvas id="graficoPres"></canvas>
         </div>
-
     </div>
 
 </div>
@@ -150,7 +141,7 @@ Proyecto de Monitoreo Ambiental — Prototipo Institucional
 </footer>
 
 <script>
-const URL = "https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
+const URL = "TU_URL_AQUI";
 
 let graficoGeneral, graficoTemp, graficoHum, graficoPres;
 let ultimoTimestamp = null;
@@ -196,40 +187,84 @@ async function cargarInicial() {
 
   ultimoTimestamp = data[data.length - 1].timestamp;
 
-  // GRÁFICO GENERAL
-  graficoGeneral = new Chart(document.getElementById("graficoGeneral"), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Temperatura (°C)', data: temp, tension: 0.3 },
-        { label: 'Humedad (%)', data: hum, tension: 0.3 },
-        { label: 'Presión (hPa)', data: pres, tension: 0.3 }
-      ]
-    }
-  });
+  graficoGeneral = crearGrafico("graficoGeneral", labels, [
+    { label: 'Temperatura (°C)', data: temp },
+    { label: 'Humedad (%)', data: hum },
+    { label: 'Presión (hPa)', data: pres }
+  ]);
 
-  // INDIVIDUALES
-  graficoTemp = crearGraficoIndividual("graficoTemp", "Temperatura (°C)", labels, temp);
-  graficoHum  = crearGraficoIndividual("graficoHum", "Humedad (%)", labels, hum);
-  graficoPres = crearGraficoIndividual("graficoPres", "Presión (hPa)", labels, pres);
+  graficoTemp = crearGrafico("graficoTemp", labels, [
+    { label: 'Temperatura (°C)', data: temp }
+  ]);
+
+  graficoHum = crearGrafico("graficoHum", labels, [
+    { label: 'Humedad (%)', data: hum }
+  ]);
+
+  graficoPres = crearGrafico("graficoPres", labels, [
+    { label: 'Presión (hPa)', data: pres }
+  ]);
 }
 
-function crearGraficoIndividual(id, label, labels, datos) {
+function crearGrafico(id, labels, datasets) {
   return new Chart(document.getElementById(id), {
     type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label, data: datos, tension: 0.3 }
-      ]
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false
     }
   });
+}
+
+async function verificarNuevoDato() {
+
+  const res = await fetch(URL + "?last=true");
+  const nuevo = await res.json();
+
+  if (!nuevo.timestamp || nuevo.timestamp === ultimoTimestamp) return;
+
+  ultimoTimestamp = nuevo.timestamp;
+
+  const fecha = new Date(nuevo.timestamp).toLocaleString();
+
+  // Actualizar gráfico general
+  graficoGeneral.data.labels.push(fecha);
+  graficoGeneral.data.datasets[0].data.push(nuevo.v1);
+  graficoGeneral.data.datasets[1].data.push(nuevo.v2);
+  graficoGeneral.data.datasets[2].data.push(nuevo.v3);
+  graficoGeneral.update();
+
+  // Actualizar individuales
+  graficoTemp.data.labels.push(fecha);
+  graficoTemp.data.datasets[0].data.push(nuevo.v1);
+  graficoTemp.update();
+
+  graficoHum.data.labels.push(fecha);
+  graficoHum.data.datasets[0].data.push(nuevo.v2);
+  graficoHum.update();
+
+  graficoPres.data.labels.push(fecha);
+  graficoPres.data.datasets[0].data.push(nuevo.v3);
+  graficoPres.update();
+
+  // Agregar fila a tabla
+  const tabla = document.getElementById("tabla");
+  tabla.innerHTML += `
+    <tr>
+      <td>${fecha}</td>
+      <td>${nuevo.v1}</td>
+      <td>${nuevo.v2}</td>
+      <td>${nuevo.v3}</td>
+    </tr>
+  `;
 }
 
 cargarInicial();
+setInterval(verificarNuevoDato, 3000);
+
 </script>
 
 </body>
 </html>
-
