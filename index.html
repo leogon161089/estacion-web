@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Estación Ambiental</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h1>Datos de la estación</h1>
+
+<table border="1" id="tabla">
+  <tr>
+    <th>Fecha</th>
+    <th>Valor</th>
+  </tr>
+</table>
+
+<br>
+
+<canvas id="grafico"></canvas>
+
+<script>
+const URL = "PEGÁ_ACÁ_TU_URL_DE_APPS_SCRIPT";
+
+function cargarDatos() {
+  fetch(URL)
+    .then(response => response.json())
+    .then(data => {
+
+      // Limpiar tabla
+      const tabla = document.getElementById("tabla");
+      tabla.innerHTML = `
+        <tr>
+          <th>Fecha</th>
+          <th>Valor</th>
+        </tr>
+      `;
+
+      const labels = [];
+      const valores = [];
+
+      data.forEach(d => {
+        labels.push(d.timestamp);
+        valores.push(d.valor);
+
+        tabla.innerHTML += `
+          <tr>
+            <td>${d.timestamp}</td>
+            <td>${d.valor}</td>
+          </tr>
+        `;
+      });
+
+      new Chart(document.getElementById("grafico"), {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Valor medido',
+            data: valores
+          }]
+        }
+      });
+
+    });
+}
+
+cargarDatos();
+</script>
+
+</body>
+</html>
