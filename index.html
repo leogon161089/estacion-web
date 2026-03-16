@@ -2,111 +2,74 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Sistema de Monitoreo Ambiental</title>
+<title>Monitoreo Ambiental</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
 body{
-margin:0;
-font-family:"Segoe UI",Roboto,Arial;
-background:#f2f4f8;
-color:#2c3e50;
+    font-family: Arial, sans-serif;
+    margin:0;
+    background:#f4f6f9;
+    text-align:center;
 }
 
 header{
-background:#1b3a57;
-color:white;
-padding:25px;
-text-align:center;
+    background:#1f3a5f;
+    color:white;
+    padding:20px;
+    font-size:24px;
 }
 
-header h1{
-margin:0;
-font-size:24px;
-}
-
-.contenedor{
-max-width:1200px;
-margin:auto;
-padding:20px;
-display:flex;
-flex-direction:column;
-gap:40px;
+.container{
+    width:95%;
+    max-width:1400px;
+    margin:auto;
 }
 
 .card{
-background:white;
-border-radius:12px;
-box-shadow:0 8px 20px rgba(0,0,0,0.05);
-padding:25px;
+    background:white;
+    margin-top:25px;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 3px 8px rgba(0,0,0,0.1);
 }
 
-.card h2{
-margin-top:0;
-font-size:18px;
-border-bottom:2px solid #e6ecf2;
-padding-bottom:10px;
-margin-bottom:20px;
-color:#1b3a57;
+.chart-container{
+    position:relative;
+    height:300px;
+    width:100%;
+}
+
+.small-charts{
+    display:grid;
+    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
 }
 
 table{
-width:100%;
-border-collapse:collapse;
-font-size:14px;
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    padding:8px;
+    border-bottom:1px solid #ddd;
+    font-size:14px;
 }
 
 th{
-background:#1b3a57;
-color:white;
-padding:10px;
-text-align:center;
+    background:#1f3a5f;
+    color:white;
 }
 
-td{
-padding:10px;
-text-align:center;
-border-bottom:1px solid #e6ecf2;
+@media(max-width:600px){
+
+header{
+    font-size:18px;
 }
 
-tr:nth-child(even){
-background:#f9fbfd;
-}
-
-/* GRID RESPONSIVE */
-
-.grid-graficos{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:20px;
-}
-
-@media (max-width:1000px){
-.grid-graficos{
-grid-template-columns:repeat(2,1fr);
-}
-}
-
-@media (max-width:600px){
-.grid-graficos{
-grid-template-columns:1fr;
-}
-}
-
-canvas{
-width:100%;
-height:280px;
-}
-
-footer{
-text-align:center;
-padding:20px;
-font-size:13px;
-color:#7f8c8d;
 }
 
 </style>
@@ -115,44 +78,37 @@ color:#7f8c8d;
 <body>
 
 <header>
-<h1>Sistema de Monitoreo Ambiental en Tiempo Real</h1>
+Sistema de Monitoreo Ambiental
 </header>
 
-<div class="contenedor">
+<div class="container">
 
 <div class="card">
-<h2>Registro Histórico Reciente</h2>
 
-<table id="tabla">
-<tr>
-<th>Fecha</th>
-<th>Temp °C</th>
-<th>Humedad %</th>
-<th>Presión hPa</th>
-</tr>
-</table>
-
-</div>
-
-<div class="card">
 <h2>Visualización General</h2>
+
+<div class="chart-container">
 <canvas id="graficoGeneral"></canvas>
 </div>
 
-<div class="grid-graficos">
+</div>
+
 
 <div class="card">
-<h2>Temperatura</h2>
+
+<h2>Variables Individuales</h2>
+
+<div class="small-charts">
+
+<div class="chart-container">
 <canvas id="graficoTemp"></canvas>
 </div>
 
-<div class="card">
-<h2>Humedad</h2>
+<div class="chart-container">
 <canvas id="graficoHum"></canvas>
 </div>
 
-<div class="card">
-<h2>Presión</h2>
+<div class="chart-container">
 <canvas id="graficoPres"></canvas>
 </div>
 
@@ -160,126 +116,80 @@ color:#7f8c8d;
 
 </div>
 
-<footer>
-Proyecto de Monitoreo Ambiental — Prototipo Institucional
-</footer>
+
+<div class="card">
+
+<h2>Últimos Registros</h2>
+
+<table id="tabla">
+
+<thead>
+<tr>
+<th>Hora</th>
+<th>Temperatura</th>
+<th>Humedad</th>
+<th>Presión</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</div>
+
+</div>
+
 
 <script>
 
-const URL="https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
+const URL = "https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
 
-let graficoGeneral,graficoTemp,graficoHum,graficoPres;
+let graficoGeneral;
+let graficoTemp;
+let graficoHum;
+let graficoPres;
+
 let ultimoTimestamp=null;
 
-function formatearHora(fecha){
-const d=new Date(fecha);
-return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-}
+function horaCorta(ts){
 
-function formatearFecha(fecha){
-const d=new Date(fecha);
-return d.toLocaleString();
-}
+const d = new Date(ts);
 
-async function cargarInicial(){
-
-const res=await fetch(URL);
-const data=await res.json();
-
-const labels=[];
-const temp=[];
-const hum=[];
-const pres=[];
-
-const tabla=document.getElementById("tabla");
-
-tabla.innerHTML=`
-<tr>
-<th>Fecha</th>
-<th>Temp °C</th>
-<th>Humedad %</th>
-<th>Presión hPa</th>
-</tr>
-`;
-
-data.forEach(d=>{
-
-const fechaTabla=formatearFecha(d.timestamp);
-const horaGrafico=formatearHora(d.timestamp);
-
-labels.push(horaGrafico);
-
-temp.push(d.v1);
-hum.push(d.v2);
-pres.push(d.v3);
-
-tabla.innerHTML+=`
-<tr>
-<td>${fechaTabla}</td>
-<td>${d.v1}</td>
-<td>${d.v2}</td>
-<td>${d.v3}</td>
-</tr>
-`;
-
-});
-
-ultimoTimestamp=data[data.length-1].timestamp;
-
-graficoGeneral=crearGrafico("graficoGeneral",labels,[
-{label:"Temperatura °C",data:temp},
-{label:"Humedad %",data:hum},
-{label:"Presión hPa",data:pres}
-]);
-
-graficoTemp=crearGrafico("graficoTemp",labels,[
-{label:"Temperatura °C",data:temp}
-]);
-
-graficoHum=crearGrafico("graficoHum",labels,[
-{label:"Humedad %",data:hum}
-]);
-
-graficoPres=crearGrafico("graficoPres",labels,[
-{label:"Presión hPa",data:pres}
-]);
+return d.toLocaleTimeString();
 
 }
 
-function crearGrafico(id,labels,datasets){
+function crearGrafico(id,label,color){
 
 return new Chart(document.getElementById(id),{
 
-type:"line",
+type:'line',
 
 data:{
-labels,
-datasets:datasets.map(ds=>({
-...ds,
+labels:[],
+datasets:[{
+label:label,
+data:[],
+borderColor:color,
+backgroundColor:color,
 tension:0.4,
-borderWidth:2,
 pointRadius:2,
 fill:false
-}))
+}]
 },
 
 options:{
 responsive:true,
 maintainAspectRatio:false,
-
 animation:{
-duration:600
+duration:700
 },
-
-interaction:{
-mode:"index",
-intersect:false
-},
-
 plugins:{
-legend:{position:"top"}
+legend:{
+display:true
+}
 },
-
 scales:{
 x:{
 ticks:{
@@ -289,67 +199,179 @@ maxTicksLimit:8
 }
 }
 }
-
 }
 
 });
 
 }
 
-async function verificarNuevoDato(){
 
-const res=await fetch(URL+"?last=true");
-const nuevo=await res.json();
+function crearGraficoGeneral(){
 
-if(!nuevo.timestamp || nuevo.timestamp===ultimoTimestamp) return;
+return new Chart(document.getElementById("graficoGeneral"),{
 
-ultimoTimestamp=nuevo.timestamp;
+type:'line',
 
-const horaGrafico=formatearHora(nuevo.timestamp);
-const fechaTabla=formatearFecha(nuevo.timestamp);
+data:{
+labels:[],
+datasets:[
+{
+label:"Temperatura",
+data:[],
+borderColor:"red",
+tension:0.4,
+pointRadius:2
+},
+{
+label:"Humedad",
+data:[],
+borderColor:"blue",
+tension:0.4,
+pointRadius:2
+},
+{
+label:"Presión",
+data:[],
+borderColor:"green",
+tension:0.4,
+pointRadius:2
+}
+]
+},
 
-/* GRAFICO GENERAL */
+options:{
+responsive:true,
+maintainAspectRatio:false,
+animation:{
+duration:700
+},
+scales:{
+x:{
+ticks:{
+maxRotation:0,
+autoSkip:true,
+maxTicksLimit:10
+}
+}
+}
+}
 
-graficoGeneral.data.labels.push(horaGrafico);
+});
 
-graficoGeneral.data.datasets[0].data.push(nuevo.v1);
-graficoGeneral.data.datasets[1].data.push(nuevo.v2);
-graficoGeneral.data.datasets[2].data.push(nuevo.v3);
+}
+
+
+function agregarFilaTabla(d){
+
+const tbody=document.querySelector("#tabla tbody");
+
+const tr=document.createElement("tr");
+
+tr.innerHTML=`
+<td>${horaCorta(d.timestamp)}</td>
+<td>${d.v1}</td>
+<td>${d.v2}</td>
+<td>${d.v3}</td>
+`;
+
+tbody.prepend(tr);
+
+while(tbody.rows.length>20){
+tbody.deleteRow(20);
+}
+
+}
+
+
+async function cargarInicial(){
+
+const res = await fetch(URL);
+
+const data = await res.json();
+
+
+graficoGeneral = crearGraficoGeneral();
+
+graficoTemp = crearGrafico("graficoTemp","Temperatura","red");
+
+graficoHum = crearGrafico("graficoHum","Humedad","blue");
+
+graficoPres = crearGrafico("graficoPres","Presión","green");
+
+
+data.forEach(d=>{
+
+const hora = horaCorta(d.timestamp);
+
+graficoGeneral.data.labels.push(hora);
+
+graficoGeneral.data.datasets[0].data.push(d.v1);
+graficoGeneral.data.datasets[1].data.push(d.v2);
+graficoGeneral.data.datasets[2].data.push(d.v3);
+
+graficoTemp.data.labels.push(hora);
+graficoTemp.data.datasets[0].data.push(d.v1);
+
+graficoHum.data.labels.push(hora);
+graficoHum.data.datasets[0].data.push(d.v2);
+
+graficoPres.data.labels.push(hora);
+graficoPres.data.datasets[0].data.push(d.v3);
+
+agregarFilaTabla(d);
+
+});
+
 
 graficoGeneral.update();
-
-/* GRAFICOS INDIVIDUALES */
-
-graficoTemp.data.labels.push(horaGrafico);
-graficoTemp.data.datasets[0].data.push(nuevo.v1);
 graficoTemp.update();
-
-graficoHum.data.labels.push(horaGrafico);
-graficoHum.data.datasets[0].data.push(nuevo.v2);
 graficoHum.update();
-
-graficoPres.data.labels.push(horaGrafico);
-graficoPres.data.datasets[0].data.push(nuevo.v3);
 graficoPres.update();
 
-/* TABLA */
 
-const tabla=document.getElementById("tabla");
+ultimoTimestamp = data[data.length-1].timestamp;
 
-tabla.innerHTML+=`
-<tr>
-<td>${fechaTabla}</td>
-<td>${nuevo.v1}</td>
-<td>${nuevo.v2}</td>
-<td>${nuevo.v3}</td>
-</tr>
-`;
+}
+
+
+async function verificarNuevoDato(){
+
+const res = await fetch(URL+"?last=true");
+
+const d = await res.json();
+
+if(d.timestamp!=ultimoTimestamp){
+
+ultimoTimestamp = d.timestamp;
+
+const hora = horaCorta(d.timestamp);
+
+graficoGeneral.data.labels.push(hora);
+graficoGeneral.data.datasets[0].data.push(d.v1);
+graficoGeneral.data.datasets[1].data.push(d.v2);
+graficoGeneral.data.datasets[2].data.push(d.v3);
+
+graficoTemp.data.labels.push(hora);
+graficoTemp.data.datasets[0].data.push(d.v1);
+
+graficoHum.data.labels.push(hora);
+graficoHum.data.datasets[0].data.push(d.v2);
+
+graficoPres.data.labels.push(hora);
+graficoPres.data.datasets[0].data.push(d.v3);
+
+graficoGeneral.update();
+graficoTemp.update();
+graficoHum.update();
+graficoPres.update();
+
+agregarFilaTabla(d);
+
+}
 
 }
 
 cargarInicial();
-
-/* ACTUALIZA CADA 3 SEGUNDOS */
 
 setInterval(verificarNuevoDato,3000);
 
