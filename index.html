@@ -8,7 +8,7 @@
 
 <style>
 
-/* VARIABLES DE TEMA */
+/* VARIABLES TEMA */
 
 :root{
 --bg:#f4f6f9;
@@ -26,25 +26,22 @@ body.dark{
 --table-border:#2a3442;
 }
 
-/* BASE */
-
 body{
 font-family:Arial;
 margin:0;
 background:var(--bg);
 color:var(--text);
 text-align:center;
-transition:background .3s,color .3s;
+transition:.3s;
 }
 
 header{
 background:var(--header);
 color:white;
 padding:20px;
-position:relative;
 }
 
-/* HEADER */
+/* HEADER LAYOUT CORREGIDO */
 
 .header-content{
 display:flex;
@@ -52,15 +49,24 @@ justify-content:space-between;
 align-items:center;
 max-width:1400px;
 margin:auto;
+flex-wrap:wrap;
+gap:15px;
+}
+
+.header-left{
 font-size:22px;
+font-weight:bold;
+}
+
+.header-right{
+display:flex;
+align-items:center;
+gap:20px;
 }
 
 /* SWITCH */
 
 .theme-switch{
-position:absolute;
-top:15px;
-right:20px;
 display:flex;
 align-items:center;
 gap:8px;
@@ -149,13 +155,11 @@ margin-top:25px;
 padding:20px;
 border-radius:10px;
 box-shadow:0 3px 8px rgba(0,0,0,0.15);
-transition:.3s;
 }
 
 .chart-container{
 position:relative;
 height:300px;
-width:100%;
 overflow:hidden;
 }
 
@@ -165,7 +169,7 @@ grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
 gap:20px;
 }
 
-/* RADAR SWEEP */
+/* RADAR */
 
 .radar-sweep{
 position:absolute;
@@ -207,8 +211,12 @@ color:white;
 
 .header-content{
 flex-direction:column;
+align-items:center;
+}
+
+.header-right{
+flex-direction:column;
 gap:10px;
-font-size:18px;
 }
 
 }
@@ -220,18 +228,24 @@ font-size:18px;
 
 <header>
 
+<div class="header-content">
+
+<div class="header-left">
+Sistema de Monitoreo Ambiental
+</div>
+
+<div class="header-right">
+
+<div class="status">
+<span class="pulse"></span>
+<span>Sistema activo</span>
+</div>
+
 <div class="theme-switch" onclick="toggleTheme()">
 <span>🌙</span>
 <div class="switch"></div>
 </div>
 
-<div class="header-content">
-
-<span>Sistema de Monitoreo Ambiental</span>
-
-<div class="status">
-<span class="pulse"></span>
-<span>Sistema activo</span>
 </div>
 
 </div>
@@ -242,22 +256,15 @@ font-size:18px;
 <div class="container">
 
 <div class="card">
-
 <h2>Visualización General</h2>
-
 <div class="chart-container">
-
 <canvas id="graficoGeneral"></canvas>
-
 <div class="radar-sweep"></div>
-
 </div>
-
 </div>
 
 
 <div class="card">
-
 <h2>Variables Individuales</h2>
 
 <div class="small-charts">
@@ -306,14 +313,9 @@ font-size:18px;
 <script>
 
 const URL="https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
-
 const MAX_PUNTOS=30;
 
-let graficoGeneral;
-let graficoTemp;
-let graficoHum;
-let graficoPres;
-
+let graficoGeneral,graficoTemp,graficoHum,graficoPres;
 let ultimoTimestamp=null;
 
 /* THEME */
@@ -322,8 +324,10 @@ function toggleTheme(){
 
 document.body.classList.toggle("dark");
 
-localStorage.setItem("theme",
-document.body.classList.contains("dark")?"dark":"light");
+localStorage.setItem(
+"theme",
+document.body.classList.contains("dark")?"dark":"light"
+);
 
 updateCharts();
 
@@ -363,6 +367,8 @@ function horaCorta(ts){
 return new Date(ts).toLocaleTimeString();
 }
 
+/* CHARTS */
+
 function crearGrafico(id,label,color){
 
 return new Chart(document.getElementById(id),{
@@ -375,7 +381,6 @@ datasets:[{
 label:label,
 data:[],
 borderColor:color,
-backgroundColor:color,
 tension:0.4,
 pointRadius:0,
 borderWidth:2
@@ -467,7 +472,6 @@ data.forEach(d=>{
 const hora=horaCorta(d.timestamp);
 
 graficoGeneral.data.labels.push(hora);
-
 graficoGeneral.data.datasets[0].data.push(d.v1);
 graficoGeneral.data.datasets[1].data.push(d.v2);
 graficoGeneral.data.datasets[2].data.push(d.v3);
