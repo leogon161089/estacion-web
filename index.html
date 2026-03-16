@@ -8,162 +8,93 @@
 
 <style>
 
-:root{
---bg:#f4f6f9;
---card:#ffffff;
---text:#222;
---header:#1f3a5f;
---table-border:#ddd;
-}
-
-body.dark{
---bg:#0f1720;
---card:#1b2430;
---text:#e6edf3;
---header:#0a2540;
---table-border:#2a3442;
-}
-
 body{
 font-family:Arial;
 margin:0;
 background:var(--bg);
 color:var(--text);
-text-align:center;
-transition:.3s;
+transition:0.3s;
 }
 
-header{
-background:var(--header);
-color:white;
-padding:20px;
+:root{
+--bg:#f5f6fa;
+--card:#ffffff;
+--text:#222;
+--accent:#2f80ed;
 }
 
-.header-content{
-display:flex;
-justify-content:space-between;
-align-items:center;
-max-width:1400px;
-margin:auto;
-flex-wrap:wrap;
-gap:15px;
-}
-
-.header-left{
-font-size:22px;
-font-weight:bold;
-}
-
-.header-right{
-display:flex;
-align-items:center;
-gap:20px;
-}
-
-.theme-switch{
-display:flex;
-align-items:center;
-gap:8px;
-font-size:13px;
-cursor:pointer;
-}
-
-.switch{
-width:42px;
-height:22px;
-background:#888;
-border-radius:20px;
-position:relative;
-transition:.3s;
-}
-
-.switch::after{
-content:"";
-width:18px;
-height:18px;
-background:white;
-border-radius:50%;
-position:absolute;
-top:2px;
-left:2px;
-transition:.3s;
-}
-
-body.dark .switch{background:#4cafef;}
-body.dark .switch::after{left:22px;}
-
-.status{
-display:flex;
-align-items:center;
-gap:8px;
-font-size:14px;
-}
-
-.pulse{
-width:10px;
-height:10px;
-background:#2ecc71;
-border-radius:50%;
-position:relative;
-}
-
-.pulse::after{
-content:"";
-position:absolute;
-width:10px;
-height:10px;
-border-radius:50%;
-background:#2ecc71;
-left:0;
-top:0;
-animation:pulseAnim 1.8s infinite;
-opacity:0.6;
-}
-
-@keyframes pulseAnim{
-0%{transform:scale(1);opacity:0.6;}
-70%{transform:scale(3);opacity:0;}
-100%{transform:scale(1);opacity:0;}
+body.dark{
+--bg:#0f172a;
+--card:#1e293b;
+--text:#f1f5f9;
+--accent:#38bdf8;
 }
 
 .container{
-width:95%;
-max-width:1400px;
+max-width:1100px;
 margin:auto;
+padding:20px;
 }
 
 .card{
 background:var(--card);
-margin-top:25px;
 padding:20px;
-border-radius:10px;
-box-shadow:0 3px 8px rgba(0,0,0,0.15);
+border-radius:14px;
+box-shadow:0 8px 20px rgba(0,0,0,0.05);
+margin-bottom:25px;
 }
 
-.chart-container{
-height:300px;
+h1{
+margin-top:0;
+text-align:center;
 }
 
-.small-charts{
+.status{
+text-align:center;
+margin-bottom:15px;
+font-weight:bold;
+color:#22c55e;
+}
+
+.grid3{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+grid-template-columns:repeat(3,1fr);
 gap:20px;
+}
+
+@media(max-width:900px){
+.grid3{
+grid-template-columns:1fr;
+}
+}
+
+canvas{
+max-height:320px !important;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
+margin-top:10px;
 }
 
 th,td{
 padding:8px;
-border-bottom:1px solid var(--table-border);
+border-bottom:1px solid #ddd;
+text-align:center;
 font-size:14px;
 }
 
-th{
-background:var(--header);
-color:white;
+.switch{
+position:fixed;
+top:15px;
+right:20px;
+background:var(--card);
+padding:8px 14px;
+border-radius:20px;
+box-shadow:0 4px 10px rgba(0,0,0,0.15);
+cursor:pointer;
+font-size:14px;
 }
 
 </style>
@@ -171,78 +102,44 @@ color:white;
 
 <body>
 
-<header>
-
-<div class="header-content">
-
-<div class="header-left">
-Sistema de Monitoreo Ambiental
-</div>
-
-<div class="header-right">
-
-<div class="status">
-<span class="pulse"></span>
-<span>Sistema activo</span>
-</div>
-
-<div class="theme-switch" onclick="toggleTheme()">
-<span>🌙</span>
-<div class="switch"></div>
-</div>
-
-</div>
-
-</div>
-
-</header>
-
+<div class="switch" onclick="toggleMode()">🌙 / ☀</div>
 
 <div class="container">
 
+<h1>Monitoreo Ambiental</h1>
+
+<div class="status">Sistema activo</div>
+
 <div class="card">
-<h2>Visualización General</h2>
-<div class="chart-container">
 <canvas id="graficoGeneral"></canvas>
 </div>
-</div>
 
+<div class="grid3">
 
 <div class="card">
-
-<h2>Variables Individuales</h2>
-
-<div class="small-charts">
-
-<div class="chart-container">
 <canvas id="graficoTemp"></canvas>
 </div>
 
-<div class="chart-container">
+<div class="card">
 <canvas id="graficoHum"></canvas>
 </div>
 
-<div class="chart-container">
-<canvas id="graficoPres"></canvas>
+<div class="card">
+<canvas id="graficoGas"></canvas>
 </div>
 
 </div>
-
-</div>
-
 
 <div class="card">
 
-<h2>Últimos Registros</h2>
-
-<table id="tabla">
+<table id="tablaDatos">
 
 <thead>
 <tr>
-<th>Hora</th>
+<th>Fecha</th>
 <th>Temperatura</th>
 <th>Humedad</th>
-<th>Presión</th>
+<th>Gas</th>
 </tr>
 </thead>
 
@@ -254,274 +151,193 @@ Sistema de Monitoreo Ambiental
 
 </div>
 
-
 <script>
 
-const URL="https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
-const MAX_PUNTOS=30;
+let datos = {
+labels:[],
+temp:[],
+hum:[],
+gas:[]
+}
 
-let graficoGeneral,graficoTemp,graficoHum,graficoPres;
-let ultimoTimestamp=null;
-
-/* PLUGIN BARRIDO */
-
-const sweepPlugin={
-id:'sweep',
+const pluginLineaAnimada = {
+id:'lineaAnimada',
 
 beforeDatasetsDraw(chart,args,pluginOptions){
 
-const {ctx,chartArea:{left,right,top,bottom,width}}=chart;
+const ctx = chart.ctx
 
-const t=(Date.now()/4000)%1;
-const x=left+width*t;
+ctx.save()
 
-ctx.save();
+ctx.setLineDash([6,6])
 
-const gradient=ctx.createLinearGradient(x-30,0,x+30,0);
-gradient.addColorStop(0,'rgba(255,255,255,0)');
-gradient.addColorStop(.5,'rgba(255,255,255,0.35)');
-gradient.addColorStop(1,'rgba(255,255,255,0)');
+ctx.lineDashOffset = -Date.now()/50
 
-ctx.fillStyle=gradient;
-ctx.fillRect(x-30,top,60,bottom-top);
-
-ctx.restore();
-
-}
-
-};
-
-Chart.register(sweepPlugin);
-
-/* LOOP ANIMACIÓN */
-
-function animateSweep(){
-
-[graficoGeneral,graficoTemp,graficoHum,graficoPres].forEach(g=>{
-if(g) g.draw();
-});
-
-requestAnimationFrame(animateSweep);
-
-}
-
-/* THEME */
-
-function toggleTheme(){
-
-document.body.classList.toggle("dark");
-
-localStorage.setItem(
-"theme",
-document.body.classList.contains("dark")?"dark":"light"
-);
-
-}
-
-function loadTheme(){
-
-if(localStorage.getItem("theme")==="dark"){
-document.body.classList.add("dark");
 }
 
 }
 
-function chartTextColor(){
+Chart.register(pluginLineaAnimada)
 
-return getComputedStyle(document.body)
-.getPropertyValue('--text');
+function crearGrafico(ctx,label,data,color){
 
-}
-
-/* UTIL */
-
-function horaCorta(ts){
-return new Date(ts).toLocaleTimeString();
-}
-
-/* CHARTS */
-
-function crearGrafico(id,label,color){
-
-return new Chart(document.getElementById(id),{
-
+return new Chart(ctx,{
 type:'line',
-
 data:{
-labels:[],
+labels:datos.labels,
 datasets:[{
 label:label,
-data:[],
+data:data,
 borderColor:color,
+backgroundColor:'transparent',
 tension:0.4,
-pointRadius:0,
-borderWidth:2
+borderWidth:2,
+pointRadius:2
 }]
 },
-
 options:{
 responsive:true,
 maintainAspectRatio:false,
-plugins:{sweep:{}},
-animation:{duration:400,easing:'linear'}
+animation:{
+duration:800
+},
+plugins:{
+legend:{display:true}
+},
+scales:{
+x:{
+ticks:{
+maxTicksLimit:6
+}
+}
+}
+}
+})
+
 }
 
-});
-
-}
-
-function crearGraficoGeneral(){
-
-return new Chart(document.getElementById("graficoGeneral"),{
-
+const graficoGeneral = new Chart(
+document.getElementById('graficoGeneral'),
+{
 type:'line',
-
 data:{
-labels:[],
+labels:datos.labels,
 datasets:[
-{label:"Temperatura",data:[],borderColor:"red",tension:0.4,pointRadius:0},
-{label:"Humedad",data:[],borderColor:"blue",tension:0.4,pointRadius:0},
-{label:"Presión",data:[],borderColor:"green",tension:0.4,pointRadius:0}
+{
+label:'Temperatura',
+data:datos.temp,
+borderColor:'#ef4444',
+tension:0.4
+},
+{
+label:'Humedad',
+data:datos.hum,
+borderColor:'#3b82f6',
+tension:0.4
+},
+{
+label:'Gas',
+data:datos.gas,
+borderColor:'#22c55e',
+tension:0.4
+}
 ]
 },
-
 options:{
 responsive:true,
 maintainAspectRatio:false,
-plugins:{sweep:{}},
-animation:{duration:400,easing:'linear'}
+animation:{duration:800},
+scales:{
+x:{ticks:{maxTicksLimit:6}}
 }
-
-});
-
 }
+}
+)
 
-/* TABLA */
+const graficoTemp = crearGrafico(
+document.getElementById('graficoTemp'),
+'Temperatura',
+datos.temp,
+'#ef4444'
+)
 
-function agregarFilaTabla(d){
+const graficoHum = crearGrafico(
+document.getElementById('graficoHum'),
+'Humedad',
+datos.hum,
+'#3b82f6'
+)
 
-const tbody=document.querySelector("#tabla tbody");
+const graficoGas = crearGrafico(
+document.getElementById('graficoGas'),
+'Gas',
+datos.gas,
+'#22c55e'
+)
 
-const tr=document.createElement("tr");
+function actualizarTabla(){
+
+const tbody=document.querySelector("#tablaDatos tbody")
+
+tbody.innerHTML=""
+
+for(let i=datos.labels.length-1;i>=0;i--){
+
+const tr=document.createElement("tr")
 
 tr.innerHTML=`
-<td>${horaCorta(d.timestamp)}</td>
-<td>${d.v1}</td>
-<td>${d.v2}</td>
-<td>${d.v3}</td>
-`;
+<td>${datos.labels[i]}</td>
+<td>${datos.temp[i]}</td>
+<td>${datos.hum[i]}</td>
+<td>${datos.gas[i]}</td>
+`
 
-tbody.prepend(tr);
-
-while(tbody.rows.length>20){
-tbody.deleteRow(20);
-}
-
-}
-
-/* LOAD */
-
-async function cargarInicial(){
-
-loadTheme();
-
-const res=await fetch(URL);
-const data=await res.json();
-
-graficoGeneral=crearGraficoGeneral();
-graficoTemp=crearGrafico("graficoTemp","Temperatura","red");
-graficoHum=crearGrafico("graficoHum","Humedad","blue");
-graficoPres=crearGrafico("graficoPres","Presión","green");
-
-data.forEach(d=>{
-
-const hora=horaCorta(d.timestamp);
-
-graficoGeneral.data.labels.push(hora);
-graficoGeneral.data.datasets[0].data.push(d.v1);
-graficoGeneral.data.datasets[1].data.push(d.v2);
-graficoGeneral.data.datasets[2].data.push(d.v3);
-
-graficoTemp.data.labels.push(hora);
-graficoTemp.data.datasets[0].data.push(d.v1);
-
-graficoHum.data.labels.push(hora);
-graficoHum.data.datasets[0].data.push(d.v2);
-
-graficoPres.data.labels.push(hora);
-graficoPres.data.datasets[0].data.push(d.v3);
-
-agregarFilaTabla(d);
-
-});
-
-graficoGeneral.update();
-graficoTemp.update();
-graficoHum.update();
-graficoPres.update();
-
-ultimoTimestamp=data[data.length-1].timestamp;
-
-animateSweep();
-
-}
-
-/* UPDATE */
-
-async function verificarNuevoDato(){
-
-const res=await fetch(URL+"?last=true");
-const d=await res.json();
-
-if(d.timestamp!=ultimoTimestamp){
-
-ultimoTimestamp=d.timestamp;
-
-const hora=horaCorta(d.timestamp);
-
-function pushChart(g,value){
-
-g.data.labels.push(hora);
-g.data.datasets[0].data.push(value);
-
-if(g.data.labels.length>MAX_PUNTOS){
-g.data.labels.shift();
-g.data.datasets[0].data.shift();
-}
-
-}
-
-pushChart(graficoTemp,d.v1);
-pushChart(graficoHum,d.v2);
-pushChart(graficoPres,d.v3);
-
-graficoGeneral.data.labels.push(hora);
-
-graficoGeneral.data.datasets[0].data.push(d.v1);
-graficoGeneral.data.datasets[1].data.push(d.v2);
-graficoGeneral.data.datasets[2].data.push(d.v3);
-
-if(graficoGeneral.data.labels.length>MAX_PUNTOS){
-
-graficoGeneral.data.labels.shift();
-graficoGeneral.data.datasets.forEach(ds=>ds.data.shift());
-
-}
-
-graficoGeneral.update();
-graficoTemp.update();
-graficoHum.update();
-graficoPres.update();
-
-agregarFilaTabla(d);
+tbody.appendChild(tr)
 
 }
 
 }
 
-cargarInicial();
+function agregarDato(){
 
-setInterval(verificarNuevoDato,3000);
+const ahora=new Date()
+
+const hora=
+ahora.getHours()+":"+
+ahora.getMinutes()+":"+
+ahora.getSeconds()
+
+datos.labels.push(hora)
+
+datos.temp.push((20+Math.random()*5).toFixed(1))
+datos.hum.push((50+Math.random()*10).toFixed(1))
+datos.gas.push((300+Math.random()*50).toFixed(0))
+
+if(datos.labels.length>20){
+
+datos.labels.shift()
+datos.temp.shift()
+datos.hum.shift()
+datos.gas.shift()
+
+}
+
+graficoGeneral.update()
+graficoTemp.update()
+graficoHum.update()
+graficoGas.update()
+
+actualizarTabla()
+
+}
+
+setInterval(agregarDato,3000)
+
+function toggleMode(){
+
+document.body.classList.toggle("dark")
+
+}
 
 </script>
 
