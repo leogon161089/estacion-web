@@ -3,136 +3,160 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Sistema de Monitoreo Ambiental</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body {
-    margin: 0;
-    font-family: "Segoe UI", Roboto, Arial, sans-serif;
-    background-color: #f2f4f8;
-    color: #2c3e50;
+
+body{
+margin:0;
+font-family:"Segoe UI",Roboto,Arial;
+background:#f2f4f8;
+color:#2c3e50;
 }
 
-header {
-    background-color: #1b3a57;
-    color: white;
-    padding: 25px;
-    text-align: center;
+header{
+background:#1b3a57;
+color:white;
+padding:25px;
+text-align:center;
 }
 
-header h1 {
-    margin: 0;
-    font-size: 24px;
+header h1{
+margin:0;
+font-size:24px;
 }
 
-.contenedor {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 40px;
+.contenedor{
+max-width:1200px;
+margin:auto;
+padding:20px;
+display:flex;
+flex-direction:column;
+gap:40px;
 }
 
-.card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-    padding: 25px;
+.card{
+background:white;
+border-radius:12px;
+box-shadow:0 8px 20px rgba(0,0,0,0.05);
+padding:25px;
 }
 
-.card h2 {
-    margin-top: 0;
-    font-size: 18px;
-    border-bottom: 2px solid #e6ecf2;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-    color: #1b3a57;
+.card h2{
+margin-top:0;
+font-size:18px;
+border-bottom:2px solid #e6ecf2;
+padding-bottom:10px;
+margin-bottom:20px;
+color:#1b3a57;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
+table{
+width:100%;
+border-collapse:collapse;
+font-size:14px;
 }
 
-th {
-    background-color: #1b3a57;
-    color: white;
-    padding: 10px;
-    text-align: center;
+th{
+background:#1b3a57;
+color:white;
+padding:10px;
+text-align:center;
 }
 
-td {
-    padding: 10px;
-    text-align: center;
-    border-bottom: 1px solid #e6ecf2;
+td{
+padding:10px;
+text-align:center;
+border-bottom:1px solid #e6ecf2;
 }
 
-tr:nth-child(even) {
-    background-color: #f9fbfd;
+tr:nth-child(even){
+background:#f9fbfd;
 }
 
-.grid-graficos {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+/* GRID RESPONSIVE */
+
+.grid-graficos{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
 }
 
-canvas {
-    max-height: 300px;
+@media (max-width:1000px){
+.grid-graficos{
+grid-template-columns:repeat(2,1fr);
+}
 }
 
-footer {
-    text-align: center;
-    padding: 20px;
-    font-size: 13px;
-    color: #7f8c8d;
+@media (max-width:600px){
+.grid-graficos{
+grid-template-columns:1fr;
 }
+}
+
+canvas{
+width:100%;
+height:280px;
+}
+
+footer{
+text-align:center;
+padding:20px;
+font-size:13px;
+color:#7f8c8d;
+}
+
 </style>
 </head>
 
 <body>
 
 <header>
-    <h1>Sistema de Monitoreo Ambiental en Tiempo Real</h1>
+<h1>Sistema de Monitoreo Ambiental en Tiempo Real</h1>
 </header>
 
 <div class="contenedor">
 
-    <div class="card">
-        <h2>Registro Histórico Reciente</h2>
-        <table id="tabla">
-            <tr>
-                <th>Fecha y Hora</th>
-                <th>Temperatura (°C)</th>
-                <th>Humedad (%)</th>
-                <th>Presión (hPa)</th>
-            </tr>
-        </table>
-    </div>
+<div class="card">
+<h2>Registro Histórico Reciente</h2>
 
-    <div class="card">
-        <h2>Visualización General</h2>
-        <canvas id="graficoGeneral"></canvas>
-    </div>
+<table id="tabla">
+<tr>
+<th>Fecha</th>
+<th>Temp °C</th>
+<th>Humedad %</th>
+<th>Presión hPa</th>
+</tr>
+</table>
 
-    <div class="grid-graficos">
-        <div class="card">
-            <h2>Temperatura</h2>
-            <canvas id="graficoTemp"></canvas>
-        </div>
-        <div class="card">
-            <h2>Humedad</h2>
-            <canvas id="graficoHum"></canvas>
-        </div>
-        <div class="card">
-            <h2>Presión</h2>
-            <canvas id="graficoPres"></canvas>
-        </div>
-    </div>
+</div>
+
+<div class="card">
+<h2>Visualización General</h2>
+<canvas id="graficoGeneral"></canvas>
+</div>
+
+<div class="grid-graficos">
+
+<div class="card">
+<h2>Temperatura</h2>
+<canvas id="graficoTemp"></canvas>
+</div>
+
+<div class="card">
+<h2>Humedad</h2>
+<canvas id="graficoHum"></canvas>
+</div>
+
+<div class="card">
+<h2>Presión</h2>
+<canvas id="graficoPres"></canvas>
+</div>
+
+</div>
 
 </div>
 
@@ -141,163 +165,195 @@ Proyecto de Monitoreo Ambiental — Prototipo Institucional
 </footer>
 
 <script>
-const URL = "https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
 
-let graficoGeneral, graficoTemp, graficoHum, graficoPres;
-let ultimoTimestamp = null;
+const URL="https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
 
-async function cargarInicial() {
+let graficoGeneral,graficoTemp,graficoHum,graficoPres;
+let ultimoTimestamp=null;
 
-  const res = await fetch(URL);
-  const data = await res.json();
-
-  const labels = [];
-  const temp = [];
-  const hum = [];
-  const pres = [];
-
-  const tabla = document.getElementById("tabla");
-  tabla.innerHTML = `
-    <tr>
-      <th>Fecha y Hora</th>
-      <th>Temperatura (°C)</th>
-      <th>Humedad (%)</th>
-      <th>Presión (hPa)</th>
-    </tr>
-  `;
-
-  data.forEach(d => {
-
-    const fecha = new Date(d.timestamp).toLocaleString();
-
-    labels.push(fecha);
-    temp.push(d.v1);
-    hum.push(d.v2);
-    pres.push(d.v3);
-
-    tabla.innerHTML += `
-      <tr>
-        <td>${fecha}</td>
-        <td>${d.v1}</td>
-        <td>${d.v2}</td>
-        <td>${d.v3}</td>
-      </tr>
-    `;
-  });
-
-  ultimoTimestamp = data[data.length - 1].timestamp;
-
-  graficoGeneral = crearGrafico("graficoGeneral", labels, [
-    { label: 'Temperatura (°C)', data: temp },
-    { label: 'Humedad (%)', data: hum },
-    { label: 'Presión (hPa)', data: pres }
-  ]);
-
-  graficoTemp = crearGrafico("graficoTemp", labels, [
-    { label: 'Temperatura (°C)', data: temp }
-  ]);
-
-  graficoHum = crearGrafico("graficoHum", labels, [
-    { label: 'Humedad (%)', data: hum }
-  ]);
-
-  graficoPres = crearGrafico("graficoPres", labels, [
-    { label: 'Presión (hPa)', data: pres }
-  ]);
+function formatearHora(fecha){
+const d=new Date(fecha);
+return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 }
 
-function crearGrafico(id, labels, datasets) {
-  return new Chart(document.getElementById(id), {
-    type: 'line',
-    data: { 
-      labels, 
-      datasets: datasets.map(ds => ({
-        ...ds,
-        tension: 0.35,
-        borderWidth: 2,
-        pointRadius: 2,
-        fill: false
-      }))
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: {
-        duration: 500,
-        easing: 'easeOutCubic'
-      },
-      interaction: {
-        mode: 'index',
-        intersect: false
-      },
-      plugins: {
-        legend: {
-          position: 'top'
-        }
-      },
-      scales: {
-        x: {
-          ticks: {
-            maxRotation: 45,
-            minRotation: 45
-          }
-        }
-      }
-    }
-  });
+function formatearFecha(fecha){
+const d=new Date(fecha);
+return d.toLocaleString();
 }
 
+async function cargarInicial(){
 
-async function verificarNuevoDato() {
+const res=await fetch(URL);
+const data=await res.json();
 
-  const res = await fetch(URL + "?last=true");
-  const nuevo = await res.json();
+const labels=[];
+const temp=[];
+const hum=[];
+const pres=[];
 
-  if (!nuevo.timestamp || nuevo.timestamp === ultimoTimestamp) return;
+const tabla=document.getElementById("tabla");
 
-  ultimoTimestamp = nuevo.timestamp;
+tabla.innerHTML=`
+<tr>
+<th>Fecha</th>
+<th>Temp °C</th>
+<th>Humedad %</th>
+<th>Presión hPa</th>
+</tr>
+`;
 
-  const fecha = new Date(nuevo.timestamp).toLocaleString();
+data.forEach(d=>{
 
-  // Actualizar gráfico general
-  graficoGeneral.data.labels.push(fecha);
-  graficoGeneral.data.datasets[0].data.push(nuevo.v1);
-  graficoGeneral.data.datasets[1].data.push(nuevo.v2);
-  graficoGeneral.data.datasets[2].data.push(nuevo.v3);
-  graficoGeneral.update();
+const fechaTabla=formatearFecha(d.timestamp);
+const horaGrafico=formatearHora(d.timestamp);
 
-  // Actualizar individuales
-  graficoTemp.data.labels.push(fecha);
-  graficoTemp.data.datasets[0].data.push(nuevo.v1);
-  graficoTemp.update();
+labels.push(horaGrafico);
 
-  graficoHum.data.labels.push(fecha);
-  graficoHum.data.datasets[0].data.push(nuevo.v2);
-  graficoHum.update();
+temp.push(d.v1);
+hum.push(d.v2);
+pres.push(d.v3);
 
-  graficoPres.data.labels.push(fecha);
-  graficoPres.data.datasets[0].data.push(nuevo.v3);
-  graficoPres.update();
+tabla.innerHTML+=`
+<tr>
+<td>${fechaTabla}</td>
+<td>${d.v1}</td>
+<td>${d.v2}</td>
+<td>${d.v3}</td>
+</tr>
+`;
 
-  // Agregar fila a tabla
-  const tabla = document.getElementById("tabla");
-  tabla.innerHTML += `
-    <tr>
-      <td>${fecha}</td>
-      <td>${nuevo.v1}</td>
-      <td>${nuevo.v2}</td>
-      <td>${nuevo.v3}</td>
-    </tr>
-  `;
+});
+
+ultimoTimestamp=data[data.length-1].timestamp;
+
+graficoGeneral=crearGrafico("graficoGeneral",labels,[
+{label:"Temperatura °C",data:temp},
+{label:"Humedad %",data:hum},
+{label:"Presión hPa",data:pres}
+]);
+
+graficoTemp=crearGrafico("graficoTemp",labels,[
+{label:"Temperatura °C",data:temp}
+]);
+
+graficoHum=crearGrafico("graficoHum",labels,[
+{label:"Humedad %",data:hum}
+]);
+
+graficoPres=crearGrafico("graficoPres",labels,[
+{label:"Presión hPa",data:pres}
+]);
+
+}
+
+function crearGrafico(id,labels,datasets){
+
+return new Chart(document.getElementById(id),{
+
+type:"line",
+
+data:{
+labels,
+datasets:datasets.map(ds=>({
+...ds,
+tension:0.4,
+borderWidth:2,
+pointRadius:2,
+fill:false
+}))
+},
+
+options:{
+responsive:true,
+maintainAspectRatio:false,
+
+animation:{
+duration:600
+},
+
+interaction:{
+mode:"index",
+intersect:false
+},
+
+plugins:{
+legend:{position:"top"}
+},
+
+scales:{
+x:{
+ticks:{
+maxRotation:0,
+autoSkip:true,
+maxTicksLimit:8
+}
+}
+}
+
+}
+
+});
+
+}
+
+async function verificarNuevoDato(){
+
+const res=await fetch(URL+"?last=true");
+const nuevo=await res.json();
+
+if(!nuevo.timestamp || nuevo.timestamp===ultimoTimestamp) return;
+
+ultimoTimestamp=nuevo.timestamp;
+
+const horaGrafico=formatearHora(nuevo.timestamp);
+const fechaTabla=formatearFecha(nuevo.timestamp);
+
+/* GRAFICO GENERAL */
+
+graficoGeneral.data.labels.push(horaGrafico);
+
+graficoGeneral.data.datasets[0].data.push(nuevo.v1);
+graficoGeneral.data.datasets[1].data.push(nuevo.v2);
+graficoGeneral.data.datasets[2].data.push(nuevo.v3);
+
+graficoGeneral.update();
+
+/* GRAFICOS INDIVIDUALES */
+
+graficoTemp.data.labels.push(horaGrafico);
+graficoTemp.data.datasets[0].data.push(nuevo.v1);
+graficoTemp.update();
+
+graficoHum.data.labels.push(horaGrafico);
+graficoHum.data.datasets[0].data.push(nuevo.v2);
+graficoHum.update();
+
+graficoPres.data.labels.push(horaGrafico);
+graficoPres.data.datasets[0].data.push(nuevo.v3);
+graficoPres.update();
+
+/* TABLA */
+
+const tabla=document.getElementById("tabla");
+
+tabla.innerHTML+=`
+<tr>
+<td>${fechaTabla}</td>
+<td>${nuevo.v1}</td>
+<td>${nuevo.v2}</td>
+<td>${nuevo.v3}</td>
+</tr>
+`;
+
 }
 
 cargarInicial();
-setInterval(verificarNuevoDato, 1000);
+
+/* ACTUALIZA CADA 3 SEGUNDOS */
+
+setInterval(verificarNuevoDato,3000);
 
 </script>
 
 </body>
 </html>
-
-
-
