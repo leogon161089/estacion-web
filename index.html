@@ -41,7 +41,7 @@ color:white;
 padding:20px;
 }
 
-/* HEADER LAYOUT CORREGIDO */
+/* HEADER */
 
 .header-content{
 display:flex;
@@ -134,11 +134,9 @@ opacity:0.6;
 }
 
 @keyframes pulseAnim{
-
 0%{transform:scale(1);opacity:0.6;}
 70%{transform:scale(3);opacity:0;}
 100%{transform:scale(1);opacity:0;}
-
 }
 
 /* LAYOUT */
@@ -160,31 +158,12 @@ box-shadow:0 3px 8px rgba(0,0,0,0.15);
 .chart-container{
 position:relative;
 height:300px;
-overflow:hidden;
 }
 
 .small-charts{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
 gap:20px;
-}
-
-/* RADAR */
-
-.radar-sweep{
-position:absolute;
-top:0;
-left:-40%;
-width:40%;
-height:100%;
-background:linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent);
-animation:sweep 4s linear infinite;
-pointer-events:none;
-}
-
-@keyframes sweep{
-0%{left:-40%;}
-100%{left:140%;}
 }
 
 /* TABLE */
@@ -204,8 +183,6 @@ th{
 background:var(--header);
 color:white;
 }
-
-/* MOBILE */
 
 @media(max-width:600px){
 
@@ -257,10 +234,11 @@ Sistema de Monitoreo Ambiental
 
 <div class="card">
 <h2>Visualización General</h2>
+
 <div class="chart-container">
 <canvas id="graficoGeneral"></canvas>
-<div class="radar-sweep"></div>
 </div>
+
 </div>
 
 
@@ -313,10 +291,44 @@ Sistema de Monitoreo Ambiental
 <script>
 
 const URL="https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
+
 const MAX_PUNTOS=30;
 
 let graficoGeneral,graficoTemp,graficoHum,graficoPres;
 let ultimoTimestamp=null;
+
+/* PLUGIN BARRIDO SOLO EN LÍNEAS */
+
+const sweepPlugin={
+id:'sweepLine',
+afterDraw(chart){
+
+const {ctx,chartArea:{left,right,top,bottom,width}}=chart;
+
+if(!width) return;
+
+const time=(Date.now()/4000)%1;
+
+const x=left+(width*time);
+
+ctx.save();
+
+const gradient=ctx.createLinearGradient(x-40,0,x+40,0);
+gradient.addColorStop(0,'rgba(255,255,255,0)');
+gradient.addColorStop(.5,'rgba(255,255,255,0.35)');
+gradient.addColorStop(1,'rgba(255,255,255,0)');
+
+ctx.fillStyle=gradient;
+
+ctx.fillRect(x-40,top,80,bottom-top);
+
+ctx.restore();
+
+}
+
+};
+
+Chart.register(sweepPlugin);
 
 /* THEME */
 
@@ -391,6 +403,7 @@ options:{
 responsive:true,
 maintainAspectRatio:false,
 animation:{duration:400,easing:'linear'},
+plugins:{sweepLine:{}},
 scales:{
 x:{ticks:{color:chartTextColor()}},
 y:{ticks:{color:chartTextColor()}}
@@ -420,6 +433,7 @@ options:{
 responsive:true,
 maintainAspectRatio:false,
 animation:{duration:400,easing:'linear'},
+plugins:{sweepLine:{}},
 scales:{
 x:{ticks:{color:chartTextColor()}},
 y:{ticks:{color:chartTextColor()}}
@@ -430,7 +444,7 @@ y:{ticks:{color:chartTextColor()}}
 
 }
 
-/* TABLE */
+/* TABLA */
 
 function agregarFilaTabla(d){
 
@@ -472,6 +486,7 @@ data.forEach(d=>{
 const hora=horaCorta(d.timestamp);
 
 graficoGeneral.data.labels.push(hora);
+
 graficoGeneral.data.datasets[0].data.push(d.v1);
 graficoGeneral.data.datasets[1].data.push(d.v2);
 graficoGeneral.data.datasets[2].data.push(d.v3);
