@@ -8,26 +8,24 @@
 
 <style>
 
-body{
-font-family:Arial;
-margin:0;
-background:var(--bg);
-color:var(--text);
-transition:0.3s;
-}
-
 :root{
---bg:#f5f6fa;
+--bg:#f4f6fb;
 --card:#ffffff;
 --text:#222;
---accent:#2f80ed;
 }
 
 body.dark{
 --bg:#0f172a;
 --card:#1e293b;
---text:#f1f5f9;
---accent:#38bdf8;
+--text:#e5e7eb;
+}
+
+body{
+margin:0;
+font-family:Arial;
+background:var(--bg);
+color:var(--text);
+transition:0.3s;
 }
 
 .container{
@@ -36,53 +34,85 @@ margin:auto;
 padding:20px;
 }
 
-.card{
-background:var(--card);
-padding:20px;
-border-radius:14px;
-box-shadow:0 8px 20px rgba(0,0,0,0.05);
-margin-bottom:25px;
-}
-
 h1{
-margin-top:0;
 text-align:center;
+margin-bottom:10px;
 }
 
 .status{
 text-align:center;
-margin-bottom:15px;
-font-weight:bold;
 color:#22c55e;
+margin-bottom:20px;
 }
 
-.grid3{
+.card{
+background:var(--card);
+padding:20px;
+border-radius:14px;
+box-shadow:0 6px 16px rgba(0,0,0,0.08);
+margin-bottom:20px;
+position:relative;
+overflow:hidden;
+}
+
+.grid{
 display:grid;
 grid-template-columns:repeat(3,1fr);
 gap:20px;
 }
 
 @media(max-width:900px){
-.grid3{
+.grid{
 grid-template-columns:1fr;
 }
 }
 
 canvas{
-max-height:320px !important;
+width:100% !important;
+height:320px !important;
 }
+
+/* animacion suave tipo telemetria */
+
+.card::after{
+
+content:"";
+position:absolute;
+top:0;
+left:-100%;
+width:200%;
+height:100%;
+
+background:linear-gradient(
+90deg,
+transparent,
+rgba(255,255,255,0.06),
+transparent
+);
+
+animation:scan 6s linear infinite;
+
+pointer-events:none;
+
+}
+
+@keyframes scan{
+0%{transform:translateX(0)}
+100%{transform:translateX(50%)}
+}
+
+/* tabla */
 
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:10px;
+font-size:14px;
 }
 
 th,td{
 padding:8px;
-border-bottom:1px solid #ddd;
 text-align:center;
-font-size:14px;
+border-bottom:1px solid #ddd;
 }
 
 .switch{
@@ -90,11 +120,10 @@ position:fixed;
 top:15px;
 right:20px;
 background:var(--card);
-padding:8px 14px;
+padding:8px 12px;
 border-radius:20px;
-box-shadow:0 4px 10px rgba(0,0,0,0.15);
 cursor:pointer;
-font-size:14px;
+box-shadow:0 4px 10px rgba(0,0,0,0.15);
 }
 
 </style>
@@ -107,14 +136,13 @@ font-size:14px;
 <div class="container">
 
 <h1>Monitoreo Ambiental</h1>
-
 <div class="status">Sistema activo</div>
 
 <div class="card">
 <canvas id="graficoGeneral"></canvas>
 </div>
 
-<div class="grid3">
+<div class="grid">
 
 <div class="card">
 <canvas id="graficoTemp"></canvas>
@@ -153,191 +181,172 @@ font-size:14px;
 
 <script>
 
-let datos = {
-labels:[],
-temp:[],
-hum:[],
-gas:[]
-}
+const API_URL = "TU_URL_DE_APPS_SCRIPT_AQUI";
 
-const pluginLineaAnimada = {
-id:'lineaAnimada',
+let datos = [];
 
-beforeDatasetsDraw(chart,args,pluginOptions){
+let graficoGeneral;
+let graficoTemp;
+let graficoHum;
+let graficoGas;
 
-const ctx = chart.ctx
+async function cargarDatos(){
 
-ctx.save()
+const r = await fetch(API_URL);
+const data = await r.json();
 
-ctx.setLineDash([6,6])
+datos = data;
 
-ctx.lineDashOffset = -Date.now()/50
+render();
 
 }
 
-}
+async function verificarNuevoDato(){
 
-Chart.register(pluginLineaAnimada)
+const r = await fetch(API_URL);
+const data = await r.json();
 
-function crearGrafico(ctx,label,data,color){
+if(data.length > datos.length){
 
-return new Chart(ctx,{
-type:'line',
-data:{
-labels:datos.labels,
-datasets:[{
-label:label,
-data:data,
-borderColor:color,
-backgroundColor:'transparent',
-tension:0.4,
-borderWidth:2,
-pointRadius:2
-}]
-},
-options:{
-responsive:true,
-maintainAspectRatio:false,
-animation:{
-duration:800
-},
-plugins:{
-legend:{display:true}
-},
-scales:{
-x:{
-ticks:{
-maxTicksLimit:6
-}
-}
-}
-}
-})
+datos = data;
+
+render();
 
 }
 
-const graficoGeneral = new Chart(
+}
+
+function render(){
+
+const labels = datos.map(d => d.fecha);
+const temp = datos.map(d => d.temperatura);
+const hum = datos.map(d => d.humedad);
+const gas = datos.map(d => d.gas);
+
+if(!graficoGeneral){
+
+crearGraficos(labels,temp,hum,gas);
+
+}else{
+
+graficoGeneral.data.labels = labels;
+graficoTemp.data.labels = labels;
+graficoHum.data.labels = labels;
+graficoGas.data.labels = labels;
+
+graficoGeneral.data.datasets[0].data = temp;
+graficoGeneral.data.datasets[1].data = hum;
+graficoGeneral.data.datasets[2].data = gas;
+
+graficoTemp.data.datasets[0].data = temp;
+graficoHum.data.datasets[0].data = hum;
+graficoGas.data.datasets[0].data = gas;
+
+graficoGeneral.update();
+graficoTemp.update();
+graficoHum.update();
+graficoGas.update();
+
+}
+
+renderTabla();
+
+}
+
+function crearGraficos(labels,temp,hum,gas){
+
+graficoGeneral = new Chart(
 document.getElementById('graficoGeneral'),
 {
 type:'line',
 data:{
-labels:datos.labels,
+labels:labels,
 datasets:[
 {
 label:'Temperatura',
-data:datos.temp,
+data:temp,
 borderColor:'#ef4444',
 tension:0.4
 },
 {
 label:'Humedad',
-data:datos.hum,
+data:hum,
 borderColor:'#3b82f6',
 tension:0.4
 },
 {
 label:'Gas',
-data:datos.gas,
+data:gas,
 borderColor:'#22c55e',
+tension:0.4
+}
+]
+},
+options:{responsive:true,maintainAspectRatio:false}
+}
+);
+
+graficoTemp = crearGrafico('graficoTemp','Temperatura',temp,'#ef4444',labels);
+graficoHum = crearGrafico('graficoHum','Humedad',hum,'#3b82f6',labels);
+graficoGas = crearGrafico('graficoGas','Gas',gas,'#22c55e',labels);
+
+}
+
+function crearGrafico(id,label,data,color,labels){
+
+return new Chart(
+document.getElementById(id),
+{
+type:'line',
+data:{
+labels:labels,
+datasets:[
+{
+label:label,
+data:data,
+borderColor:color,
 tension:0.4
 }
 ]
 },
 options:{
 responsive:true,
-maintainAspectRatio:false,
-animation:{duration:800},
-scales:{
-x:{ticks:{maxTicksLimit:6}}
-}
+maintainAspectRatio:false
 }
 }
 )
 
-const graficoTemp = crearGrafico(
-document.getElementById('graficoTemp'),
-'Temperatura',
-datos.temp,
-'#ef4444'
-)
+}
 
-const graficoHum = crearGrafico(
-document.getElementById('graficoHum'),
-'Humedad',
-datos.hum,
-'#3b82f6'
-)
+function renderTabla(){
 
-const graficoGas = crearGrafico(
-document.getElementById('graficoGas'),
-'Gas',
-datos.gas,
-'#22c55e'
-)
+const tbody = document.querySelector("#tablaDatos tbody");
+tbody.innerHTML="";
 
-function actualizarTabla(){
+datos.slice().reverse().forEach(d=>{
 
-const tbody=document.querySelector("#tablaDatos tbody")
-
-tbody.innerHTML=""
-
-for(let i=datos.labels.length-1;i>=0;i--){
-
-const tr=document.createElement("tr")
+const tr=document.createElement("tr");
 
 tr.innerHTML=`
-<td>${datos.labels[i]}</td>
-<td>${datos.temp[i]}</td>
-<td>${datos.hum[i]}</td>
-<td>${datos.gas[i]}</td>
-`
+<td>${d.fecha}</td>
+<td>${d.temperatura}</td>
+<td>${d.humedad}</td>
+<td>${d.gas}</td>
+`;
 
-tbody.appendChild(tr)
+tbody.appendChild(tr);
 
-}
-
-}
-
-function agregarDato(){
-
-const ahora=new Date()
-
-const hora=
-ahora.getHours()+":"+
-ahora.getMinutes()+":"+
-ahora.getSeconds()
-
-datos.labels.push(hora)
-
-datos.temp.push((20+Math.random()*5).toFixed(1))
-datos.hum.push((50+Math.random()*10).toFixed(1))
-datos.gas.push((300+Math.random()*50).toFixed(0))
-
-if(datos.labels.length>20){
-
-datos.labels.shift()
-datos.temp.shift()
-datos.hum.shift()
-datos.gas.shift()
+})
 
 }
-
-graficoGeneral.update()
-graficoTemp.update()
-graficoHum.update()
-graficoGas.update()
-
-actualizarTabla()
-
-}
-
-setInterval(agregarDato,3000)
 
 function toggleMode(){
-
-document.body.classList.toggle("dark")
-
+document.body.classList.toggle("dark");
 }
+
+cargarDatos();
+
+setInterval(verificarNuevoDato,3000);
 
 </script>
 
