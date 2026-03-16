@@ -114,8 +114,10 @@ border-bottom:1px solid var(--border);
 text-align:center;
 }
 
+/* EFECTOS FILAS */
+
 tbody tr{
-transition:background 0.18s ease;
+transition:background 0.18s ease, transform 0.35s ease, opacity 0.35s ease;
 }
 
 tbody tr:hover{
@@ -129,6 +131,25 @@ background:var(--rowActive);
 tbody tr.nueva{
 background:var(--rowNewest);
 }
+
+/* ANIMACION NUEVA FILA */
+
+@keyframes slideInRow{
+0%{
+opacity:0;
+transform:translateY(-12px);
+}
+100%{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+tbody tr.animar{
+animation:slideInRow 0.35s ease;
+}
+
+/* GRAFICOS */
 
 .grid-graficos{
 display:grid;
@@ -191,6 +212,7 @@ font-size:20px;
 
 <div class="card">
 <h2>Registro Histórico Reciente</h2>
+
 <table>
 <thead>
 <tr>
@@ -200,8 +222,11 @@ font-size:20px;
 <th>Presión (hPa)</th>
 </tr>
 </thead>
+
 <tbody id="tablaBody"></tbody>
+
 </table>
+
 </div>
 
 <div class="card">
@@ -264,7 +289,9 @@ const tbody=document.getElementById("tablaBody");
 tbody.querySelectorAll("tr").forEach(f=>f.classList.remove("nueva"));
 
 const tr=document.createElement("tr");
+
 tr.classList.add("nueva");
+tr.classList.add("animar");
 
 tr.innerHTML=`
 <td>${fecha}</td>
@@ -278,6 +305,10 @@ tbody.insertBefore(tr,tbody.firstChild);
 while(tbody.rows.length>MAX_ROWS){
 tbody.deleteRow(tbody.rows.length-1);
 }
+
+setTimeout(()=>{
+tr.classList.remove("animar");
+},400);
 
 }
 
@@ -382,10 +413,17 @@ maxTicksLimit:8
 }
 
 function limitarDatos(g){
+
 if(g.data.labels.length>MAX_POINTS){
+
 g.data.labels.shift();
-g.data.datasets.forEach(d=>d.data.shift());
+
+g.data.datasets.forEach(d=>{
+d.data.shift();
+});
+
 }
+
 }
 
 async function verificarNuevoDato(){
