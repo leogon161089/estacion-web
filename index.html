@@ -16,6 +16,9 @@
 --text:#2c3e50;
 --header:#1b3a57;
 --border:#e6ecf2;
+--rowHighlight:rgba(27,58,87,0.08);
+--rowActive:rgba(27,58,87,0.14);
+--rowNewest:rgba(46,204,113,0.18);
 }
 
 body.dark{
@@ -24,6 +27,9 @@ body.dark{
 --text:#e4e6eb;
 --header:#0f253a;
 --border:#2a2f36;
+--rowHighlight:rgba(255,255,255,0.06);
+--rowActive:rgba(255,255,255,0.12);
+--rowNewest:rgba(46,204,113,0.22);
 }
 
 body{
@@ -108,6 +114,26 @@ border-bottom:1px solid var(--border);
 text-align:center;
 }
 
+/* ===== EFECTOS FILA TABLA ===== */
+
+tbody tr{
+transition:background 0.18s ease;
+}
+
+tbody tr:hover{
+background:var(--rowHighlight);
+}
+
+tbody tr:active{
+background:var(--rowActive);
+}
+
+tbody tr.nueva{
+background:var(--rowNewest);
+}
+
+/* ============================== */
+
 .grid-graficos{
 display:grid;
 grid-template-columns:repeat(3,1fr);
@@ -170,12 +196,15 @@ font-size:20px;
 <div class="card">
 <h2>Registro Histórico Reciente</h2>
 <table id="tabla">
+<thead>
 <tr>
 <th>Fecha y Hora</th>
 <th>Temperatura (°C)</th>
 <th>Humedad (%)</th>
 <th>Presión (hPa)</th>
 </tr>
+</thead>
+<tbody id="tablaBody"></tbody>
 </table>
 </div>
 
@@ -216,14 +245,11 @@ let graficoGeneral,graficoTemp,graficoHum,graficoPres;
 let ultimoTimestamp=null;
 
 const MAX_POINTS=120;
+const MAX_ROWS=20;
 
 function toggleDark(){
-
 document.body.classList.toggle("dark");
-
-localStorage.setItem("modoOscuro",
-document.body.classList.contains("dark"));
-
+localStorage.setItem("modoOscuro",document.body.classList.contains("dark"));
 }
 
 if(localStorage.getItem("modoOscuro")==="true"){
@@ -231,9 +257,32 @@ document.body.classList.add("dark");
 }
 
 function formatearHora(ts){
-
 const d=new Date(ts);
 return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+}
+
+function agregarFila(fecha,v1,v2,v3){
+
+const tbody=document.getElementById("tablaBody");
+
+const filas=tbody.querySelectorAll("tr");
+filas.forEach(f=>f.classList.remove("nueva"));
+
+const tr=document.createElement("tr");
+tr.classList.add("nueva");
+
+tr.innerHTML=`
+<td>${fecha}</td>
+<td>${v1}</td>
+<td>${v2}</td>
+<td>${v3}</td>
+`;
+
+tbody.appendChild(tr);
+
+while(tbody.rows.length>MAX_ROWS){
+tbody.deleteRow(0);
+}
 
 }
 
@@ -247,17 +296,6 @@ const temp=[];
 const hum=[];
 const pres=[];
 
-const tabla=document.getElementById("tabla");
-
-tabla.innerHTML=`
-<tr>
-<th>Fecha y Hora</th>
-<th>Temperatura (°C)</th>
-<th>Humedad (%)</th>
-<th>Presión (hPa)</th>
-</tr>
-`;
-
 data.forEach(d=>{
 
 const fechaCompleta=new Date(d.timestamp).toLocaleString();
@@ -268,14 +306,7 @@ temp.push(d.v1);
 hum.push(d.v2);
 pres.push(d.v3);
 
-tabla.innerHTML+=`
-<tr>
-<td>${fechaCompleta}</td>
-<td>${d.v1}</td>
-<td>${d.v2}</td>
-<td>${d.v3}</td>
-</tr>
-`;
+agregarFila(fechaCompleta,d.v1,d.v2,d.v3);
 
 });
 
@@ -329,41 +360,18 @@ intersect:false
 },
 
 plugins:{
-
-legend:{
-position:'top'
-},
-
-tooltip:{
-callbacks:{
-title:(items)=>{
-
-const i=items[0].dataIndex;
-return items[0].chart.data.labels[i];
-
-}
-}
-},
-
+legend:{position:'top'},
 zoom:{
-
-pan:{
-enabled:true,
-mode:'x'
-},
-
+pan:{enabled:true,mode:'x'},
 zoom:{
 wheel:{enabled:true},
 pinch:{enabled:true},
 mode:'x'
 }
-
 }
-
 },
 
 scales:{
-
 x:{
 ticks:{
 maxRotation:0,
@@ -371,7 +379,6 @@ autoSkip:true,
 maxTicksLimit:8
 }
 }
-
 }
 
 }
@@ -380,16 +387,11 @@ maxTicksLimit:8
 
 }
 
-function limitarDatos(grafico){
+function limitarDatos(g){
 
-if(grafico.data.labels.length>MAX_POINTS){
-
-grafico.data.labels.shift();
-
-grafico.data.datasets.forEach(d=>{
-d.data.shift();
-});
-
+if(g.data.labels.length>MAX_POINTS){
+g.data.labels.shift();
+g.data.datasets.forEach(d=>d.data.shift());
 }
 
 }
@@ -407,9 +409,7 @@ const hora=formatearHora(nuevo.timestamp);
 const fechaCompleta=new Date(nuevo.timestamp).toLocaleString();
 
 [graficoGeneral,graficoTemp,graficoHum,graficoPres].forEach(g=>{
-
 g.data.labels.push(hora);
-
 });
 
 graficoGeneral.data.datasets[0].data.push(nuevo.v1);
@@ -421,22 +421,11 @@ graficoHum.data.datasets[0].data.push(nuevo.v2);
 graficoPres.data.datasets[0].data.push(nuevo.v3);
 
 [graficoGeneral,graficoTemp,graficoHum,graficoPres].forEach(g=>{
-
 limitarDatos(g);
 g.update();
-
 });
 
-const tabla=document.getElementById("tabla");
-
-tabla.innerHTML+=`
-<tr>
-<td>${fechaCompleta}</td>
-<td>${nuevo.v1}</td>
-<td>${nuevo.v2}</td>
-<td>${nuevo.v3}</td>
-</tr>
-`;
+agregarFila(fechaCompleta,nuevo.v1,nuevo.v2,nuevo.v3);
 
 }
 
