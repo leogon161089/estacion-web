@@ -6,6 +6,7 @@
 <title>Sistema de Monitoreo Ambiental</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 
 <style>
 
@@ -28,13 +29,13 @@ body.dark{
 body{
 margin:0;
 font-family:"Segoe UI",Roboto,Arial,sans-serif;
-background-color:var(--bg);
+background:var(--bg);
 color:var(--text);
-transition:background 0.3s,color 0.3s;
+transition:0.3s;
 }
 
 header{
-background-color:var(--header);
+background:var(--header);
 color:white;
 padding:25px;
 text-align:center;
@@ -49,7 +50,6 @@ font-size:24px;
 position:fixed;
 top:15px;
 right:15px;
-background:#ffffff;
 border:none;
 border-radius:20px;
 padding:8px 14px;
@@ -57,6 +57,7 @@ cursor:pointer;
 font-size:14px;
 box-shadow:0 4px 10px rgba(0,0,0,0.2);
 z-index:999;
+background:white;
 }
 
 body.dark .darkToggle{
@@ -96,20 +97,15 @@ font-size:14px;
 }
 
 th{
-background-color:var(--header);
+background:var(--header);
 color:white;
 padding:10px;
-text-align:center;
 }
 
 td{
 padding:10px;
-text-align:center;
 border-bottom:1px solid var(--border);
-}
-
-tr:nth-child(even){
-background-color:rgba(0,0,0,0.02);
+text-align:center;
 }
 
 .grid-graficos{
@@ -119,8 +115,8 @@ gap:20px;
 }
 
 canvas{
-width:100% !important;
-height:320px !important;
+width:100%!important;
+height:320px!important;
 }
 
 footer{
@@ -130,8 +126,6 @@ font-size:13px;
 color:#7f8c8d;
 }
 
-/* TABLET */
-
 @media(max-width:1000px){
 
 .grid-graficos{
@@ -139,12 +133,10 @@ grid-template-columns:repeat(2,1fr);
 }
 
 canvas{
-height:300px !important;
+height:300px!important;
 }
 
 }
-
-/* MOBILE */
 
 @media(max-width:650px){
 
@@ -152,22 +144,12 @@ height:300px !important;
 grid-template-columns:1fr;
 }
 
-.contenedor{
-padding:15px;
-gap:30px;
-}
-
 canvas{
-height:260px !important;
+height:260px!important;
 }
 
 header h1{
 font-size:20px;
-}
-
-.darkToggle{
-top:10px;
-right:10px;
 }
 
 }
@@ -220,7 +202,6 @@ right:10px;
 </div>
 
 </div>
-
 </div>
 
 <footer>
@@ -234,9 +215,25 @@ const URL="https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFr
 let graficoGeneral,graficoTemp,graficoHum,graficoPres;
 let ultimoTimestamp=null;
 
+const MAX_POINTS=120;
+
 function toggleDark(){
 
 document.body.classList.toggle("dark");
+
+localStorage.setItem("modoOscuro",
+document.body.classList.contains("dark"));
+
+}
+
+if(localStorage.getItem("modoOscuro")==="true"){
+document.body.classList.add("dark");
+}
+
+function formatearHora(ts){
+
+const d=new Date(ts);
+return d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
 
 }
 
@@ -263,16 +260,17 @@ tabla.innerHTML=`
 
 data.forEach(d=>{
 
-const fecha=new Date(d.timestamp).toLocaleString();
+const fechaCompleta=new Date(d.timestamp).toLocaleString();
+const hora=formatearHora(d.timestamp);
 
-labels.push(fecha);
+labels.push(hora);
 temp.push(d.v1);
 hum.push(d.v2);
 pres.push(d.v3);
 
 tabla.innerHTML+=`
 <tr>
-<td>${fecha}</td>
+<td>${fechaCompleta}</td>
 <td>${d.v1}</td>
 <td>${d.v2}</td>
 <td>${d.v3}</td>
@@ -312,24 +310,18 @@ type:'line',
 data:{
 labels,
 datasets:datasets.map(ds=>({
-
 ...ds,
 tension:0.35,
 borderWidth:2,
 pointRadius:2,
 fill:false
-
 }))
 },
 
 options:{
+
 responsive:true,
 maintainAspectRatio:false,
-
-animation:{
-duration:500,
-easing:'easeOutCubic'
-},
 
 interaction:{
 mode:'index',
@@ -337,23 +329,68 @@ intersect:false
 },
 
 plugins:{
+
 legend:{
 position:'top'
+},
+
+tooltip:{
+callbacks:{
+title:(items)=>{
+
+const i=items[0].dataIndex;
+return items[0].chart.data.labels[i];
+
+}
 }
 },
 
+zoom:{
+
+pan:{
+enabled:true,
+mode:'x'
+},
+
+zoom:{
+wheel:{enabled:true},
+pinch:{enabled:true},
+mode:'x'
+}
+
+}
+
+},
+
 scales:{
+
 x:{
 ticks:{
-maxRotation:45,
-minRotation:45
+maxRotation:0,
+autoSkip:true,
+maxTicksLimit:8
 }
 }
+
 }
 
 }
 
 });
+
+}
+
+function limitarDatos(grafico){
+
+if(grafico.data.labels.length>MAX_POINTS){
+
+grafico.data.labels.shift();
+
+grafico.data.datasets.forEach(d=>{
+d.data.shift();
+});
+
+}
 
 }
 
@@ -366,31 +403,35 @@ if(!nuevo.timestamp||nuevo.timestamp===ultimoTimestamp)return;
 
 ultimoTimestamp=nuevo.timestamp;
 
-const fecha=new Date(nuevo.timestamp).toLocaleString();
+const hora=formatearHora(nuevo.timestamp);
+const fechaCompleta=new Date(nuevo.timestamp).toLocaleString();
 
-graficoGeneral.data.labels.push(fecha);
+[graficoGeneral,graficoTemp,graficoHum,graficoPres].forEach(g=>{
+
+g.data.labels.push(hora);
+
+});
+
 graficoGeneral.data.datasets[0].data.push(nuevo.v1);
 graficoGeneral.data.datasets[1].data.push(nuevo.v2);
 graficoGeneral.data.datasets[2].data.push(nuevo.v3);
-graficoGeneral.update();
 
-graficoTemp.data.labels.push(fecha);
 graficoTemp.data.datasets[0].data.push(nuevo.v1);
-graficoTemp.update();
-
-graficoHum.data.labels.push(fecha);
 graficoHum.data.datasets[0].data.push(nuevo.v2);
-graficoHum.update();
-
-graficoPres.data.labels.push(fecha);
 graficoPres.data.datasets[0].data.push(nuevo.v3);
-graficoPres.update();
+
+[graficoGeneral,graficoTemp,graficoHum,graficoPres].forEach(g=>{
+
+limitarDatos(g);
+g.update();
+
+});
 
 const tabla=document.getElementById("tabla");
 
 tabla.innerHTML+=`
 <tr>
-<td>${fecha}</td>
+<td>${fechaCompleta}</td>
 <td>${nuevo.v1}</td>
 <td>${nuevo.v2}</td>
 <td>${nuevo.v3}</td>
