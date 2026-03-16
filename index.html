@@ -8,8 +8,6 @@
 
 <style>
 
-/* VARIABLES TEMA */
-
 :root{
 --bg:#f4f6f9;
 --card:#ffffff;
@@ -41,8 +39,6 @@ color:white;
 padding:20px;
 }
 
-/* HEADER */
-
 .header-content{
 display:flex;
 justify-content:space-between;
@@ -63,8 +59,6 @@ display:flex;
 align-items:center;
 gap:20px;
 }
-
-/* SWITCH */
 
 .theme-switch{
 display:flex;
@@ -95,15 +89,8 @@ left:2px;
 transition:.3s;
 }
 
-body.dark .switch{
-background:#4cafef;
-}
-
-body.dark .switch::after{
-left:22px;
-}
-
-/* STATUS */
+body.dark .switch{background:#4cafef;}
+body.dark .switch::after{left:22px;}
 
 .status{
 display:flex;
@@ -139,8 +126,6 @@ opacity:0.6;
 100%{transform:scale(1);opacity:0;}
 }
 
-/* LAYOUT */
-
 .container{
 width:95%;
 max-width:1400px;
@@ -156,7 +141,6 @@ box-shadow:0 3px 8px rgba(0,0,0,0.15);
 }
 
 .chart-container{
-position:relative;
 height:300px;
 }
 
@@ -165,8 +149,6 @@ display:grid;
 grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
 gap:20px;
 }
-
-/* TABLE */
 
 table{
 width:100%;
@@ -182,20 +164,6 @@ font-size:14px;
 th{
 background:var(--header);
 color:white;
-}
-
-@media(max-width:600px){
-
-.header-content{
-flex-direction:column;
-align-items:center;
-}
-
-.header-right{
-flex-direction:column;
-gap:10px;
-}
-
 }
 
 </style>
@@ -234,15 +202,14 @@ Sistema de Monitoreo Ambiental
 
 <div class="card">
 <h2>Visualización General</h2>
-
 <div class="chart-container">
 <canvas id="graficoGeneral"></canvas>
 </div>
-
 </div>
 
 
 <div class="card">
+
 <h2>Variables Individuales</h2>
 
 <div class="small-charts">
@@ -291,36 +258,32 @@ Sistema de Monitoreo Ambiental
 <script>
 
 const URL="https://script.google.com/macros/s/AKfycbzRFCU9xvuNrxeL6GIg06jKVhpBFrddmZ86M-T9jXEabJNdHazOXlA-a9FExJ3CABCF5A/exec";
-
 const MAX_PUNTOS=30;
 
 let graficoGeneral,graficoTemp,graficoHum,graficoPres;
 let ultimoTimestamp=null;
 
-/* PLUGIN BARRIDO SOLO EN LÍNEAS */
+/* PLUGIN BARRIDO */
 
 const sweepPlugin={
-id:'sweepLine',
-afterDraw(chart){
+id:'sweep',
+
+beforeDatasetsDraw(chart,args,pluginOptions){
 
 const {ctx,chartArea:{left,right,top,bottom,width}}=chart;
 
-if(!width) return;
-
-const time=(Date.now()/4000)%1;
-
-const x=left+(width*time);
+const t=(Date.now()/4000)%1;
+const x=left+width*t;
 
 ctx.save();
 
-const gradient=ctx.createLinearGradient(x-40,0,x+40,0);
+const gradient=ctx.createLinearGradient(x-30,0,x+30,0);
 gradient.addColorStop(0,'rgba(255,255,255,0)');
 gradient.addColorStop(.5,'rgba(255,255,255,0.35)');
 gradient.addColorStop(1,'rgba(255,255,255,0)');
 
 ctx.fillStyle=gradient;
-
-ctx.fillRect(x-40,top,80,bottom-top);
+ctx.fillRect(x-30,top,60,bottom-top);
 
 ctx.restore();
 
@@ -329,6 +292,18 @@ ctx.restore();
 };
 
 Chart.register(sweepPlugin);
+
+/* LOOP ANIMACIÓN */
+
+function animateSweep(){
+
+[graficoGeneral,graficoTemp,graficoHum,graficoPres].forEach(g=>{
+if(g) g.draw();
+});
+
+requestAnimationFrame(animateSweep);
+
+}
 
 /* THEME */
 
@@ -340,8 +315,6 @@ localStorage.setItem(
 "theme",
 document.body.classList.contains("dark")?"dark":"light"
 );
-
-updateCharts();
 
 }
 
@@ -357,19 +330,6 @@ function chartTextColor(){
 
 return getComputedStyle(document.body)
 .getPropertyValue('--text');
-
-}
-
-function updateCharts(){
-
-[graficoGeneral,graficoTemp,graficoHum,graficoPres].forEach(g=>{
-
-g.options.scales.x.ticks.color=chartTextColor();
-g.options.scales.y.ticks.color=chartTextColor();
-
-g.update();
-
-});
 
 }
 
@@ -402,12 +362,8 @@ borderWidth:2
 options:{
 responsive:true,
 maintainAspectRatio:false,
-animation:{duration:400,easing:'linear'},
-plugins:{sweepLine:{}},
-scales:{
-x:{ticks:{color:chartTextColor()}},
-y:{ticks:{color:chartTextColor()}}
-}
+plugins:{sweep:{}},
+animation:{duration:400,easing:'linear'}
 }
 
 });
@@ -432,12 +388,8 @@ datasets:[
 options:{
 responsive:true,
 maintainAspectRatio:false,
-animation:{duration:400,easing:'linear'},
-plugins:{sweepLine:{}},
-scales:{
-x:{ticks:{color:chartTextColor()}},
-y:{ticks:{color:chartTextColor()}}
-}
+plugins:{sweep:{}},
+animation:{duration:400,easing:'linear'}
 }
 
 });
@@ -486,7 +438,6 @@ data.forEach(d=>{
 const hora=horaCorta(d.timestamp);
 
 graficoGeneral.data.labels.push(hora);
-
 graficoGeneral.data.datasets[0].data.push(d.v1);
 graficoGeneral.data.datasets[1].data.push(d.v2);
 graficoGeneral.data.datasets[2].data.push(d.v3);
@@ -510,6 +461,8 @@ graficoHum.update();
 graficoPres.update();
 
 ultimoTimestamp=data[data.length-1].timestamp;
+
+animateSweep();
 
 }
 
