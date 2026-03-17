@@ -118,8 +118,6 @@ border-bottom:1px solid var(--border);
 text-align:center;
 }
 
-/* EFECTOS FILAS */
-
 tbody tr{
 transition:background 0.18s ease, transform 0.35s ease, opacity 0.35s ease;
 }
@@ -136,24 +134,14 @@ tbody tr.nueva{
 background:var(--rowNewest);
 }
 
-/* ANIMACION NUEVA FILA */
-
 @keyframes slideInRow{
-0%{
-opacity:0;
-transform:translateY(-12px);
-}
-100%{
-opacity:1;
-transform:translateY(0);
-}
+0%{opacity:0;transform:translateY(-12px);}
+100%{opacity:1;transform:translateY(0);}
 }
 
 tbody tr.animar{
 animation:slideInRow 0.35s ease;
 }
-
-/* GRAFICOS */
 
 .grid-graficos{
 display:grid;
@@ -364,7 +352,11 @@ graficoPres=crearGrafico("graficoPres",labels,[
 
 function crearGrafico(id,labels,datasets){
 
-return new Chart(document.getElementById(id),{
+datasets.forEach(d=>{
+d.baseColor=d.borderColor;
+});
+
+const chart=new Chart(document.getElementById(id),{
 
 type:'line',
 
@@ -384,8 +376,45 @@ responsive:true,
 maintainAspectRatio:false,
 
 interaction:{
-mode:'index',
+mode:'nearest',
 intersect:false
+},
+
+onHover:(event,activeElements,chart)=>{
+
+if(activeElements.length){
+
+const datasetIndex=activeElements[0].datasetIndex;
+
+chart.data.datasets.forEach((ds,i)=>{
+
+if(i===datasetIndex){
+
+ds.borderWidth=4;
+ds.borderColor=ds.baseColor;
+
+}else{
+
+ds.borderWidth=2;
+ds.borderColor=ds.baseColor+"33";
+
+}
+
+});
+
+chart.update('none');
+
+}else{
+
+chart.data.datasets.forEach(ds=>{
+ds.borderWidth=2;
+ds.borderColor=ds.baseColor;
+});
+
+chart.update('none');
+
+}
+
 },
 
 plugins:{
@@ -413,6 +442,8 @@ maxTicksLimit:8
 }
 
 });
+
+return chart;
 
 }
 
